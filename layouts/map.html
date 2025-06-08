@@ -44,7 +44,7 @@
 </style>
 
 {{ $center := .Get "center" }}
-{{ $zoom := .Get "zoom" | default "14" }}
+{{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
 
 <div class="map-wrapper"
      data-src="https://www.openstreetmap.org/export/embed.html?bbox=&layer=mapnik&marker={{ $center }}">
@@ -58,7 +58,7 @@
       {{ with .Site.Params.privacy_notice_text }}
         {{ . }}
       {{ else }}
-        Click to load the map from OpenStreetMap.
+        By loading the map, you accept the privacy policy of OpenStreetMap.
       {{ end }}
     </div>
   {{ end }}
