@@ -56,10 +56,10 @@
 
   {{ if .Site.Params.show_privacy_notice }}
     <div class="map-overlay">
-      {{ with .Site.Params.privacy_notice_text }}
+      {{ with .Site.Params.googlemaps_privacy_notice_text }}
         {{ . }}
       {{ else }}
-        By loading the map, you accept the privacy policy of Google Maps.
+        Nach einem Klick werden Daten an Google übertragen und als interaktive Karte geladen.
       {{ end }}
     </div>
   {{ end }}
