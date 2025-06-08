@@ -13,13 +13,12 @@
     },
     {
       "field": "params.googlemaps_privacy_notice_text",
-      "label": "Google Maps privacy notice text",
+      "label": "Privacy notice text",
       "type": "string",
-      "default": "Nach einem Klick werden Daten an Google übertragen und als interaktive Karte geladen."
     },
     {
       "field": "params.default_map_zoom",
-      "label": "Default map zoom level",
+      "label": "Default zoom level",
       "type": "string",
       "default": "14"
     },
