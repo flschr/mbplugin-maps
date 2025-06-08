@@ -1,0 +1,7 @@
+{
+  "name": "mbplugin-osm-map",
+  "title": "Easy and privacy-friendly OSM Maps",
+  "description": "Provides a shortcode to embed OpenStreetMap in a privacy-conscious way.",
+  "author": "René Fischer",
+  "version": "1.0.0"
+}
