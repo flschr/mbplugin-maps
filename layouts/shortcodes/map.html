@@ -45,12 +45,13 @@
 
 {{ $center := .Get "center" }}
 {{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
+{{ $key := .Site.Params.google_staticmaps_key }}
 
 <div class="map-wrapper"
-     data-src="https://www.openstreetmap.org/export/embed.html?bbox=&layer=mapnik&marker={{ $center }}">
+     data-src="https://www.google.com/maps/embed/v1/view?key={{ $key }}&center={{ $center }}&zoom={{ $zoom }}&maptype=roadmap">
 
   <img class="map-thumbnail"
-       src="https://staticmap.openstreetmap.de/staticmap.php?center={{ $center }}&zoom={{ $zoom }}&size=800x450"
+       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $center }}&zoom={{ $zoom }}&size=800x450&key={{ $key }}"
        alt="Map preview">
 
   {{ if .Site.Params.show_privacy_notice }}
@@ -58,7 +59,7 @@
       {{ with .Site.Params.privacy_notice_text }}
         {{ . }}
       {{ else }}
-        By loading the map, you accept the privacy policy of OpenStreetMap.
+        By loading the map, you accept the privacy policy of Google Maps.
       {{ end }}
     </div>
   {{ end }}

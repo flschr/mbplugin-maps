@@ -1,9 +1,9 @@
 {
   "name": "mbplugin-map",
-  "title": "Privacy-Friendly OSM Maps",
-  "description": "Provides a shortcode to embed OpenStreetMap in a privacy-conscious way with a click-to-load preview and optional privacy notice.",
+  "title": "Privacy-Friendly Google Maps",
+  "description": "Provides a shortcode to embed Google Maps in a privacy-conscious way with a click-to-load preview and optional privacy notice.",
   "author": "René Fischer",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "fields": [
     {
       "field": "params.show_privacy_notice",
@@ -15,13 +15,19 @@
       "field": "params.privacy_notice_text",
       "label": "Privacy notice text",
       "type": "string",
-      "default": "By loading the map, you accept the privacy policy of OpenStreetMap."
+      "default": "By loading the map, you accept the privacy policy of Google Maps."
     },
     {
       "field": "params.default_map_zoom",
       "label": "Default map zoom level",
       "type": "string",
       "default": "14"
+    },
+    {
+      "field": "params.google_staticmaps_key",
+      "label": "Google Maps Static API Key",
+      "type": "string",
+      "default": ""
     }
   ]
 }
