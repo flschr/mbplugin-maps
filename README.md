@@ -9,10 +9,14 @@ This plugin provides a privacy-friendly shortcode for embedding Google Maps into
 Add the following shortcode to a blog post to embed a map:
 
 ```markdown
-{{< map center="48.1351,11.5820" zoom="14" >}}
+{{< map loc="48.1351,11.5820" zoom="14" >}}
 ```
 
-If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
+```markdown
+{{< map loc="Marienplatz, München" zoom="15" >}}
+```
+
+The `loc` parameter accepts either coordinates (e.g. `48.1351,11.5820`) or address strings (e.g. `Marienplatz, München`). If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
 
 ## Configuration
 
