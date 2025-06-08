@@ -1,6 +1,6 @@
 # Privacy-friendly and easy Google Maps embeds for Micro.blog
 
-![Plugin Logo](logo.png)
+<img src="logo.png" alt="Google Maps Embeds for Micro.blog" width="200">
 
 This plugin provides a privacy-friendly shortcode for embedding Google Maps into Micro.blog posts with click-to-load behavior and optional privacy notice.
 
