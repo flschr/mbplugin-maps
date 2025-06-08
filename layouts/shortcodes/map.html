@@ -51,7 +51,7 @@
      data-src="https://www.google.com/maps/embed/v1/view?key={{ $key }}&center={{ $center }}&zoom={{ $zoom }}&maptype=roadmap">
 
   <img class="map-thumbnail"
-       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $center }}&zoom={{ $zoom }}&size=800x450&key={{ $key }}"
+       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $center }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $center }}&key={{ $key }}"
        alt="Map preview">
 
   {{ if .Site.Params.show_privacy_notice }}
@@ -64,7 +64,6 @@
     </div>
   {{ end }}
 
-  <div class="map-button">Load Map</div>
 </div>
 
 <script>
