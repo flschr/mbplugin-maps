@@ -12,8 +12,7 @@ Add the following shortcode to a blog post to embed a map:
 {{< map center="48.1351,11.5820" zoom="14" >}}
 ```
 
-If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used.  
-You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
+If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
 
 ## Configuration
 
