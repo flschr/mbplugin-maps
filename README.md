@@ -39,8 +39,7 @@ To use this plugin, you'll need a Google Maps Static API key. Here's how to get 
 6. Click **+ Create Credentials** > **API key**.
 7. Copy the generated key and paste it into the plugin settings under `google_staticmaps_key`.
 
-> ⚠️ The Google Maps Static API includes $200 of free usage per month (~100,000 map views). See [pricing information](https://developers.google.com/maps/billing-and-pricing/pricing) for details.  
-> 🔒 To prevent abuse, it’s highly recommended to restrict your API key to your domain.
+> ⚠️ The Google Maps Static API includes $200 of free usage per month (~100,000 map views). See [pricing information](https://developers.google.com/maps/billing-and-pricing/pricing) for details. To prevent abuse, it’s highly recommended to restrict your API key to your domain.
 
 ## Notes
 
