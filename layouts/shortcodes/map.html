@@ -52,7 +52,7 @@
      data-src="https://www.google.com/maps/embed/v1/place?key={{ $key }}&q={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
 
   <img class="map-thumbnail"
-       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $loc }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $loc }}&key={{ $key }}"
+       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $locEscaped }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locEscaped }}&key={{ $key }}"
        alt="Map preview">
 
   {{ if .Site.Params.show_privacy_notice }}
