@@ -52,6 +52,3 @@ If the demand is high enough, I might develop a proxy endpoint to ensure that AP
 ## 👤 Author
 
 René Fischer – [https://fischr.org](https://fischr.org)
-## Running tests
-
-Run `pytest` to execute the test suite.
