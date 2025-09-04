@@ -1,7 +1,7 @@
 <style>
 .map-wrapper {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 */
+  padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
   background-color: #eee;
@@ -21,7 +21,7 @@
   left: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.65);
-  color: #fff;
+  color: white;
   text-align: center;
   font-size: 0.85em;
   padding: 0.5em 1em;
@@ -34,7 +34,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: #007bff;
-  color: #fff;
+  color: white;
   padding: 0.5em 1em;
   border-radius: 4px;
   font-weight: bold;
@@ -43,55 +43,36 @@
 }
 </style>
 
-{{/* ---------- INPUT & SANITIZING ---------- */}}
-{{ $locRaw := .Get "loc" | default "" | trim }}
-{{/* Unicode Minus (−) -> '-', NBSP -> ' ', alle Spaces raus */}}
-{{ $locNoWeird := $locRaw | replace "−" "-" | replace " " " " | replace " " "" }}
-{{/* "lat,lon" in zwei Teile splitten */}}
-{{ $parts := split $locNoWeird "," }}
-{{ $lat := "" }}
-{{ $lng := "" }}
-{{ if eq (len $parts) 2 }}
-  {{ $lat = index $parts 0 | trim }}
-  {{ $lng = index $parts 1 | trim }}
-{{ end }}
-{{/* Fallback: wenn keine zwei Zahlen erkannt, verwenden wir den Original-String (z.B. eine Adresse) */}}
-{{ $hasLatLng := and (ne $lat "") (ne $lng "") }}
-{{ $locCsv := cond $hasLatLng (printf "%s,%s" $lat $lng) $locRaw }}
-
+{{ $loc := .Get "loc" }}
+{{ $locEscaped := $loc | urlquery }}
 {{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
-{{ $key  := .Site.Params.google_staticmaps_key }}
+{{ $key := .Site.Params.google_staticmaps_key }}
 
-{{/* URLs */}}
-{{ $static := printf "https://maps.googleapis.com/maps/api/staticmap?center=%s&zoom=%s&size=800x450&markers=color:red%%7C%s&key=%s" ($locCsv | urlquery) $zoom ($locCsv | urlquery) $key }}
-{{/* Für den Klick-Link bewusst die einfache q=lat,lng Variante (robust, zeigt Pin) */}}
-{{ $gmaps := printf "https://www.google.com/maps?q=%s" $locCsv }}
+<div class="map-wrapper"
+     data-src="https://www.google.com/maps/embed/v1/place?key={{ $key }}&q={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
 
-<div class="map-wrapper" data-url="{{ $gmaps }}">
   <img class="map-thumbnail"
-       src="{{ $static }}"
+       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $locEscaped }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locEscaped }}&key={{ $key }}"
        alt="Map preview">
+
   {{ if .Site.Params.show_privacy_notice }}
     <div class="map-overlay">
       {{ with .Site.Params.googlemaps_privacy_notice_text }}
         {{ . }}
       {{ else }}
-        Nach Klick öffnet sich Google Maps.
+        After click, the map will be loaded from Google.
       {{ end }}
     </div>
   {{ end }}
+
 </div>
 
 <script>
-document.querySelectorAll('.map-wrapper').forEach(function(wrapper){
-  var url = wrapper.dataset.url;
-  wrapper.addEventListener('click', function(){
-    window.open(url, '_blank', 'noopener');
+document.querySelectorAll('.map-wrapper').forEach(wrapper => {
+  const src = wrapper.dataset.src;
+  const iframe = `<iframe src="${src}" allowfullscreen style="border:0;width:100%;height:100%;position:absolute;top:0;left:0;"></iframe>`;
+  wrapper.addEventListener('click', () => {
+    wrapper.innerHTML = iframe;
   });
 });
 </script>
-
-{{/* Debug-Hinweis im HTML-Kommentar: final verwendete Werte
-locRaw="{{ $locRaw }}" | locCsv="{{ $locCsv }}" | zoom="{{ $zoom }}"
-static="{{ $static }}" | gmaps="{{ $gmaps }}"
-*/}}
