@@ -44,15 +44,15 @@
 </style>
 
 {{ $loc := .Get "loc" }}
-{{ $locEscaped := $loc | urlquery }}
+{{ $locQuery := $loc | urlquery }}
 {{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
 {{ $key := .Site.Params.google_staticmaps_key }}
 
 <div class="map-wrapper"
-     data-src="https://www.google.com/maps/embed/v1/search?key={{ $key }}&q={{ $locEscaped }}&center={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
+     data-src="https://www.google.com/maps/embed/v1/search?key={{ $key }}&q={{ $locQuery }}&center={{ $loc }}&zoom={{ $zoom }}&maptype=roadmap">
 
   <img class="map-thumbnail"
-       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $locEscaped }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locEscaped }}&key={{ $key }}"
+       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $loc }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locQuery }}&key={{ $key }}"
        alt="Map preview">
 
   {{ if .Site.Params.show_privacy_notice }}
