@@ -3,7 +3,7 @@
   "title": "Privacy-Friendly Google Maps",
   "description": "Provides a shortcode to embed Google Maps in a privacy-conscious way with a click-to-load preview and optional privacy notice.",
   "author": "René Fischer",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "fields": [
     {
       "field": "params.show_privacy_notice",
