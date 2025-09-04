@@ -49,7 +49,7 @@
 {{ $key := .Site.Params.google_staticmaps_key }}
 
 <div class="map-wrapper"
-     data-src="https://www.google.com/maps/embed/v1/place?key={{ $key }}&q={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
+     data-src="https://www.google.com/maps/embed/v1/search?key={{ $key }}&q={{ $locEscaped }}&center={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
 
   <img class="map-thumbnail"
        src="https://maps.googleapis.com/maps/api/staticmap?center={{ $locEscaped }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locEscaped }}&key={{ $key }}"
