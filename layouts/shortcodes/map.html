@@ -32,9 +32,26 @@
   padding: 1rem;
 }
 .mb-map-canvas--preview {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  flex-direction: column;
+  gap: 1rem;
+}
+.mb-map-preview-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.mb-map-preview-controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 }
 .mb-map-load-button {
   background-color: #1b1b1b;
@@ -321,7 +338,7 @@
         '&maptype=mapnik&markers=' + encodeURIComponent(marker);
     }
 
-    function showPreview(wrapper, lat, lng, zoom, markerText) {
+    function showPreview(wrapper, lat, lng, zoom, markerText, locationLabel) {
       const mapId = wrapper.dataset.mapId;
       const canvas = document.getElementById(mapId);
       if (!canvas) {
@@ -329,7 +346,23 @@
       }
       canvas.innerHTML = '';
       canvas.classList.add('mb-map-canvas--preview');
-      canvas.style.backgroundImage = 'url("' + buildStaticMapUrl(lat, lng, zoom) + '")';
+
+      const existingImage = canvas.querySelector('img.mb-map-preview-image');
+      if (existingImage) {
+        existingImage.remove();
+      }
+
+      const img = document.createElement('img');
+      img.className = 'mb-map-preview-image';
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.src = buildStaticMapUrl(lat, lng, zoom);
+      const descriptiveLabel = locationLabel && locationLabel.trim() ? locationLabel.trim() : 'map location';
+      img.alt = 'Static map preview for ' + descriptiveLabel + '.';
+      canvas.appendChild(img);
+
+      const controls = document.createElement('div');
+      controls.className = 'mb-map-preview-controls';
 
       const button = document.createElement('button');
       button.type = 'button';
@@ -352,7 +385,15 @@
         });
       });
 
-      canvas.appendChild(button);
+      controls.appendChild(button);
+
+      if (markerText && markerText.trim()) {
+        const caption = document.createElement('p');
+        caption.textContent = markerText.trim();
+        controls.appendChild(caption);
+      }
+
+      canvas.appendChild(controls);
     }
 
     function showError(wrapper, message) {
@@ -381,7 +422,7 @@
         const coords = parseCoordinates(locationValue);
 
         if (coords) {
-          showPreview(wrapper, coords.lat, coords.lng, zoom, markerText);
+          showPreview(wrapper, coords.lat, coords.lng, zoom, markerText, locationValue);
           return;
         }
 
@@ -393,7 +434,7 @@
 
         const cached = normalizedLocation ? getCachedCoordinates(normalizedLocation) : null;
         if (cached) {
-          showPreview(wrapper, cached.lat, cached.lng, zoom, markerText);
+          showPreview(wrapper, cached.lat, cached.lng, zoom, markerText, locationValue);
           return;
         }
 
@@ -424,7 +465,7 @@
             if (normalizedLocation) {
               setCachedCoordinates(normalizedLocation, { lat: lat, lng: lng });
             }
-            showPreview(wrapper, lat, lng, zoom, markerText);
+            showPreview(wrapper, lat, lng, zoom, markerText, locationValue);
           })
           .catch(function() {
             showError(wrapper, 'Unable to load the map right now.');
