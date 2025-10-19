@@ -1,7 +1,7 @@
 {
   "name": "mbplugin-map",
   "title": "Privacy-Friendly Maps",
-  "description": "Embed interactive maps powered by OpenStreetMap without requiring an API key, with optional privacy notice text.",
+  "description": "Embed interactive maps powered by OpenStreetMap, with optional privacy notice text.",
   "author": "René Fischer",
   "version": "3.0.1",
   "fields": [
