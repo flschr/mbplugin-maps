@@ -1,8 +1,8 @@
-# Privacy-friendly and easy Google Maps embeds for Micro.blog
+# Privacy-friendly and easy map embeds for Micro.blog
 
-<img src="logo.png" alt="Google Maps Embeds for Micro.blog" width="200">
+<img src="logo.png" alt="Map embeds for Micro.blog" width="200">
 
-This plugin provides a privacy-friendly shortcode for embedding Google Maps into Micro.blog posts. It displays a static image of the map and only loads the interactive map from Google Maps after the user clicks on it. An optional privacy notice overlay can be shown before loading the map.
+This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap tiles so that no API key is required. An optional privacy notice overlay can be shown on top of the map.
 
 ## Usage
 
@@ -16,38 +16,19 @@ Add the following shortcode to a blog post to embed a map:
 {{< map loc="Marienplatz, München" zoom="15" >}}
 ```
 
-The `loc` parameter accepts either coordinates (e.g. `48.1351,11.5820`) or address strings (e.g. `Marienplatz, München`). If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
+The `loc` parameter accepts either coordinates (e.g. `48.1351,11.5820`) or address strings (e.g. `Marienplatz, München`). If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. Address lookups are performed via [Nominatim](https://nominatim.openstreetmap.org/). You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
 
 ## Configuration
 
 You can configure the following options via your Micro.blog plugin settings:
 
-- Show or hide the overlay message before the map loads.
-- Customize the privacy notice text.
+- Show or hide the overlay message.
+- Customize the privacy notice text displayed on the overlay.
 - Set the default zoom level (used if no zoom value is set in the shortcode).
-- Enter your Google Maps Static API key (required).
-
-### Obtaining an API Key
-
-To use this plugin, you'll need a Google Maps Static API key. Here's how to get one:
-
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project or select an existing one.
-3. Navigate to **APIs & Services > Library**.
-4. Search for **Maps Static API** and enable it.
-5. Go to **APIs & Services > Credentials**.
-6. Click **+ Create Credentials** > **API key**.
-7. Copy the generated key and paste it into the plugin settings under `google_staticmaps_key`.
-
-> ⚠️ The Google Maps Static API includes $200 of free usage per month (~100,000 map views). See [pricing information](https://developers.google.com/maps/billing-and-pricing/pricing) for details. Be aware that the API key is part of your HTML code and also in the Micro.blog Github backup if you use it. To prevent abuse, it’s highly recommended to restrict your API key to your domain.
 
 ## Notes
 
-To convert an address to coordinates, you can use:
-[https://www.latlong.net](https://www.latlong.net)
-
-## Future plans
-If the demand is high enough, I might develop a proxy endpoint to ensure that API keys are never included in the HTML code.
+Because the plugin talks directly to OpenStreetMap and Nominatim servers, please make sure your usage adheres to their respective terms of use. Heavy-traffic sites should consider running their own tile and geocoding services.
 
 ## 👤 Author
 
