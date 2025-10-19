@@ -1,4 +1,4 @@
-# Privacy-friendly and easy map embeds for Micro.blog
+# Embed interactive maps powered by OpenStreetMap easily and privacy-friendly.
 
 <img src="logo.png" alt="Map embeds for Micro.blog" width="200">
 
