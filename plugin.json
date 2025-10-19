@@ -23,19 +23,13 @@
       "default": "14"
     },
     {
-      "field": "params.map_preview_provider",
-      "label": "Static preview provider (osm, maptiler, geoapify)",
-      "type": "string",
-      "default": "osm"
-    },
-    {
       "field": "params.map_preview_style",
-      "label": "Static preview style (optional)",
+      "label": "Geoapify static preview style (optional)",
       "type": "string"
     },
     {
       "field": "params.map_preview_api_key",
-      "label": "Static preview API key (optional)",
+      "label": "Geoapify static preview API key",
       "type": "string"
     }
   ]
