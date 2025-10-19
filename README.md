@@ -2,7 +2,7 @@
 
 <img src="logo.png" alt="Map embeds for Micro.blog" width="200">
 
-This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap tiles so that no API key is required. An optional privacy notice overlay can be shown on top of the map.
+This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap, and Geoapify to generate preview static preview images of the embedded map, and after a click on the map, loads an embedded OSM map. An optional privacy notice overlay can be shown on the static preview image.
 
 ## Usage
 
@@ -34,8 +34,6 @@ You can configure the following options via your Micro.blog plugin settings:
 
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and
 provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
-
-If you previously configured a privacy notice message in an older version of the plugin, the text will continue to be used automatically.
 
 ## Notes
 
