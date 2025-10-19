@@ -59,8 +59,9 @@
 <div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc }}" data-zoom="{{ $zoom }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
+    {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
     <div class="mb-map-overlay">
-      {{ with .Site.Params.googlemaps_privacy_notice_text }}
+      {{ with $privacyText }}
         {{ . }}
       {{ else }}
         Map data © OpenStreetMap contributors.
@@ -90,33 +91,73 @@
       }
       window.__mbMapLeafletLoading = true;
       if (!document.querySelector('link[data-mb-map-leaflet="css"]')) {
-        const css = document.createElement('link');
-        css.rel = 'stylesheet';
-        css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        css.integrity = 'sha512-sA+e2pMvU0N2sfx8bV+RaH59RUW2KIiMzH6I0X58F3RrgPf63eNbUsMUKc7kwh28ykV59C1yH3e1h52mS7P4hQ==';
-        css.crossOrigin = '';
-        css.dataset.mbMapLeaflet = 'css';
-        document.head.appendChild(css);
+        function loadLeafletStylesheet(href, integrity, onFailure) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = href;
+          if (integrity) {
+            link.integrity = integrity;
+          }
+          link.crossOrigin = 'anonymous';
+          link.dataset.mbMapLeaflet = 'css';
+          link.onload = function() {
+            window.__mbMapLeafletStyleFailed = false;
+          };
+          link.onerror = function() {
+            link.remove();
+            if (typeof onFailure === 'function') {
+              onFailure();
+            } else {
+              window.__mbMapLeafletStyleFailed = true;
+            }
+          };
+          document.head.appendChild(link);
+        }
+
+        loadLeafletStylesheet(
+          'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+          'sha512-sA+e2pMvU0N2sfx8bV+RaH59RUW2KIiMzH6I0X58F3RrgPf63eNbUsMUKc7kwh28ykV59C1yH3e1h52mS7P4hQ==',
+          function() {
+            loadLeafletStylesheet('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css');
+          }
+        );
       }
       if (!document.querySelector('script[data-mb-map-leaflet="js"]')) {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.integrity = 'sha512-vJ0wZgfGQm6G3y9kA0RduCMJLZ/HdlIQK5vCk1vZ1tcHTTX3e8DqRLVQjaxAgAnszCQQXTsQJ4nxs1jGME4pKw==';
-        script.crossOrigin = '';
-        script.dataset.mbMapLeaflet = 'js';
-        script.onload = function() {
-          window.__mbMapLeafletLoading = false;
-          window.__mbMapLeafletFailed = false;
-          const callbacks = window.__mbMapPending.splice(0);
-          callbacks.forEach(function(fn) { fn(); });
-        };
-        script.onerror = function() {
-          window.__mbMapLeafletLoading = false;
-          window.__mbMapLeafletFailed = true;
-          const callbacks = window.__mbMapPending.splice(0);
-          callbacks.forEach(function(fn) { fn(); });
-        };
-        document.body.appendChild(script);
+        function loadLeafletScript(src, integrity, onFailure) {
+          const script = document.createElement('script');
+          script.src = src;
+          if (integrity) {
+            script.integrity = integrity;
+          }
+          script.crossOrigin = 'anonymous';
+          script.dataset.mbMapLeaflet = 'js';
+          script.onload = function() {
+            window.__mbMapLeafletLoading = false;
+            window.__mbMapLeafletFailed = false;
+            const callbacks = window.__mbMapPending.splice(0);
+            callbacks.forEach(function(fn) { fn(); });
+          };
+          script.onerror = function() {
+            script.remove();
+            if (typeof onFailure === 'function') {
+              onFailure();
+            } else {
+              window.__mbMapLeafletLoading = false;
+              window.__mbMapLeafletFailed = true;
+              const callbacks = window.__mbMapPending.splice(0);
+              callbacks.forEach(function(fn) { fn(); });
+            }
+          };
+          document.body.appendChild(script);
+        }
+
+        loadLeafletScript(
+          'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+          'sha512-vJ0wZgfGQm6G3y9kA0RduCMJLZ/HdlIQK5vCk1vZ1tcHTTX3e8DqRLVQjaxAgAnszCQQXTsQJ4nxs1jGME4pKw==',
+          function() {
+            loadLeafletScript('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js');
+          }
+        );
       }
     };
   }

@@ -26,6 +26,8 @@ You can configure the following options via your Micro.blog plugin settings:
 - Customize the privacy notice text displayed on the overlay.
 - Set the default zoom level (used if no zoom value is set in the shortcode).
 
+If you previously configured a privacy notice message in an older version of the plugin, the text will continue to be used automatically.
+
 ## Notes
 
 Because the plugin talks directly to OpenStreetMap and Nominatim servers, please make sure your usage adheres to their respective terms of use. Heavy-traffic sites should consider running their own tile and geocoding services.
