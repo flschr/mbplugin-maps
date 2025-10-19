@@ -29,6 +29,14 @@ You can configure the following options via your Micro.blog plugin settings:
 - Show or hide the overlay message.
 - Customize the privacy notice text displayed on the overlay.
 - Set the default zoom level (used if no zoom value is set in the shortcode).
+- Choose the static preview provider (`osm`, `maptiler`, or `geoapify`).
+- Provide an optional static preview style (e.g. a MapTiler style ID or Geoapify theme).
+- Provide an optional API key for providers that require one.
+
+When using the default `osm` preview provider, the shortcode will try to load an image from the OpenStreetMap static map
+service. If that fails, the plugin falls back to a low-traffic MapTiler preview so that the visitor still sees a map snapshot.
+To remove the watermark and increase reliability you can either supply your own MapTiler API key or switch to another
+provider that you have configured.
 
 If you previously configured a privacy notice message in an older version of the plugin, the text will continue to be used automatically.
 
