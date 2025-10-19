@@ -1,78 +1,260 @@
+{{ $loc := .Get "loc" }}
+{{ if not $loc }}
+<p class="mb-map-error">No location provided for map shortcode.</p>
+{{ else }}
+{{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
+{{ $id := printf "mb-map-%d" (now.UnixNano) }}
+{{ if not (.Page.Scratch.Get "mb-map-style-loaded") }}
+{{ .Page.Scratch.Set "mb-map-style-loaded" true }}
 <style>
-.map-wrapper {
+.mb-map-wrapper {
   position: relative;
   padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
-  background-color: #eee;
+  background-color: #eef2f4;
   max-width: 100%;
+  border-radius: 8px;
 }
-.map-thumbnail {
+.mb-map-canvas {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  cursor: pointer;
-  z-index: 1;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1b1b1b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
 }
-.map-overlay {
+.mb-map-wrapper .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+.mb-map-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.65);
-  color: white;
+  color: #fff;
   text-align: center;
   font-size: 0.85em;
   padding: 0.5em 1em;
-  z-index: 2;
+  z-index: 5;
   pointer-events: none;
 }
-.map-button {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #007bff;
-  color: white;
-  padding: 0.5em 1em;
-  border-radius: 4px;
-  font-weight: bold;
-  z-index: 3;
-  pointer-events: none;
+.mb-map-error {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #991b1b;
 }
 </style>
-
-{{ $loc := .Get "loc" }}
-{{ $locEscaped := $loc | urlquery }}
-{{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
-{{ $key := .Site.Params.google_staticmaps_key }}
-
-<div class="map-wrapper"
-     data-src="https://www.google.com/maps/embed/v1/place?key={{ $key }}&q={{ $locEscaped }}&zoom={{ $zoom }}&maptype=roadmap">
-
-  <img class="map-thumbnail"
-       src="https://maps.googleapis.com/maps/api/staticmap?center={{ $locEscaped }}&zoom={{ $zoom }}&size=800x450&markers=color:red%7C{{ $locEscaped }}&key={{ $key }}"
-       alt="Map preview">
-
+{{ end }}
+<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc }}" data-zoom="{{ $zoom }}">
+  <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
-    <div class="map-overlay">
+    <div class="mb-map-overlay">
       {{ with .Site.Params.googlemaps_privacy_notice_text }}
         {{ . }}
       {{ else }}
-        After click, the map will be loaded from Google.
+        Map data © OpenStreetMap contributors.
       {{ end }}
     </div>
   {{ end }}
-
 </div>
-
+<noscript>
+  <p class="mb-map-error">Maps require JavaScript to display.</p>
+</noscript>
 <script>
-document.querySelectorAll('.map-wrapper').forEach(wrapper => {
-  const src = wrapper.dataset.src;
-  const iframe = `<iframe src="${src}" allowfullscreen style="border:0;width:100%;height:100%;position:absolute;top:0;left:0;"></iframe>`;
-  wrapper.addEventListener('click', () => {
-    wrapper.innerHTML = iframe;
-  });
-});
+(function() {
+  if (!window.__mbMapEnsureLeaflet) {
+    window.__mbMapPending = [];
+    window.__mbMapEnsureLeaflet = function(callback) {
+      if (window.__mbMapLeafletFailed) {
+        callback();
+        return;
+      }
+      if (window.L && window.L.map) {
+        callback();
+        return;
+      }
+      window.__mbMapPending.push(callback);
+      if (window.__mbMapLeafletLoading) {
+        return;
+      }
+      window.__mbMapLeafletLoading = true;
+      if (!document.querySelector('link[data-mb-map-leaflet="css"]')) {
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        css.integrity = 'sha512-sA+e2pMvU0N2sfx8bV+RaH59RUW2KIiMzH6I0X58F3RrgPf63eNbUsMUKc7kwh28ykV59C1yH3e1h52mS7P4hQ==';
+        css.crossOrigin = 'anonymous';
+        css.dataset.mbMapLeaflet = 'css';
+        document.head.appendChild(css);
+      }
+      if (!document.querySelector('script[data-mb-map-leaflet="js"]')) {
+        function loadLeafletScript(src, integrity, onFailure) {
+          const script = document.createElement('script');
+          script.src = src;
+          if (integrity) {
+            script.integrity = integrity;
+          }
+          script.crossOrigin = 'anonymous';
+          script.dataset.mbMapLeaflet = 'js';
+          script.onload = function() {
+            window.__mbMapLeafletLoading = false;
+            window.__mbMapLeafletFailed = false;
+            const callbacks = window.__mbMapPending.splice(0);
+            callbacks.forEach(function(fn) { fn(); });
+          };
+          script.onerror = function() {
+            script.remove();
+            if (typeof onFailure === 'function') {
+              onFailure();
+            } else {
+              window.__mbMapLeafletLoading = false;
+              window.__mbMapLeafletFailed = true;
+              const callbacks = window.__mbMapPending.splice(0);
+              callbacks.forEach(function(fn) { fn(); });
+            }
+          };
+          document.body.appendChild(script);
+        }
+
+        loadLeafletScript(
+          'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+          'sha512-vJ0wZgfGQm6G3y9kA0RduCMJLZ/HdlIQK5vCk1vZ1tcHTTX3e8DqRLVQjaxAgAnszCQQXTsQJ4nxs1jGME4pKw==',
+          function() {
+            loadLeafletScript('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js');
+          }
+        );
+      }
+    };
+  }
+
+  if (!window.__mbMapInitMaps) {
+    function parseCoordinates(value) {
+      if (!value) {
+        return null;
+      }
+      const parts = value.split(',');
+      if (parts.length !== 2) {
+        return null;
+      }
+      const lat = parseFloat(parts[0]);
+      const lng = parseFloat(parts[1]);
+      if (!isFinite(lat) || !isFinite(lng)) {
+        return null;
+      }
+      return { lat: lat, lng: lng };
+    }
+
+    function createMap(wrapper, lat, lng, zoom) {
+      const mapId = wrapper.dataset.mapId;
+      const canvas = document.getElementById(mapId);
+      if (!canvas) {
+        return;
+      }
+      canvas.innerHTML = '';
+      const map = L.map(mapId, {
+        attributionControl: true,
+        zoomControl: true,
+      }).setView([lat, lng], zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      L.marker([lat, lng]).addTo(map);
+    }
+
+    function showError(wrapper, message) {
+      const mapId = wrapper.dataset.mapId;
+      const canvas = document.getElementById(mapId);
+      if (canvas) {
+        canvas.textContent = message;
+      }
+    }
+
+    window.__mbMapInitMaps = function() {
+      window.__mbMapEnsureLeaflet(function() {
+        if (!window.L || !window.L.map) {
+          const wrappers = document.querySelectorAll('.mb-map-wrapper');
+          wrappers.forEach(function(wrapper) {
+            if (wrapper.dataset.initialized === 'true') {
+              return;
+            }
+            wrapper.dataset.initialized = 'true';
+            const mapId = wrapper.dataset.mapId;
+            const canvas = document.getElementById(mapId);
+            if (canvas) {
+              canvas.textContent = 'Leaflet could not be loaded.';
+            }
+          });
+          return;
+        }
+        const wrappers = document.querySelectorAll('.mb-map-wrapper');
+        wrappers.forEach(function(wrapper) {
+          if (wrapper.dataset.initialized === 'true') {
+            return;
+          }
+          const zoomValue = parseInt(wrapper.dataset.zoom, 10);
+          const zoom = Number.isFinite(zoomValue) ? zoomValue : 14;
+          const locationValue = wrapper.dataset.loc;
+          const coords = parseCoordinates(locationValue);
+          wrapper.dataset.initialized = 'true';
+
+          if (coords) {
+            createMap(wrapper, coords.lat, coords.lng, zoom);
+            return;
+          }
+
+          const mapId = wrapper.dataset.mapId;
+          const canvas = document.getElementById(mapId);
+          if (canvas) {
+            canvas.textContent = 'Searching for location…';
+          }
+
+          const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(locationValue);
+          fetch(url, {
+            headers: {
+              'Accept-Language': (navigator.language || 'en')
+            }
+          })
+            .then(function(response) {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(function(results) {
+              if (!Array.isArray(results) || results.length === 0) {
+                showError(wrapper, 'Location not found.');
+                return;
+              }
+              const result = results[0];
+              const lat = parseFloat(result.lat);
+              const lng = parseFloat(result.lon);
+              if (!isFinite(lat) || !isFinite(lng)) {
+                showError(wrapper, 'Location not found.');
+                return;
+              }
+              createMap(wrapper, lat, lng, zoom);
+            })
+            .catch(function() {
+              showError(wrapper, 'Unable to load the map right now.');
+            });
+        });
+      });
+    };
+  }
+
+  window.__mbMapInitMaps();
+})();
 </script>
+{{ end }}
