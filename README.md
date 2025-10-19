@@ -59,4 +59,4 @@ René Fischer – [https://fischr.org](https://fischr.org)
 ## Changelog
 
 ### 4.0.0
-- Completely rewrote the plugin to move away from Google Maps towards OpenStreetMap + Geoapify.
+- Completely rewrote the plugin to move away from Google Maps and use OpenStreetMap + Geoapify instead.
