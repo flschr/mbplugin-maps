@@ -5,6 +5,9 @@
 {{ $zoom := .Get "zoom" | default .Site.Params.default_map_zoom | default "14" }}
 {{ $marker := .Get "marker" | default "" }}
 {{ $id := printf "mb-map-%d" (now.UnixNano) }}
+{{ $previewProvider := .Site.Params.map_preview_provider | default "osm" }}
+{{ $previewStyle := .Site.Params.map_preview_style | default "" }}
+{{ $previewApiKey := .Site.Params.map_preview_api_key | default "" }}
 {{ if not (.Page.Scratch.Get "mb-map-style-loaded") }}
 {{ .Page.Scratch.Set "mb-map-style-loaded" true }}
 <style>
@@ -35,6 +38,16 @@
   flex-direction: column;
   gap: 1rem;
 }
+.mb-map-canvas--fallback {
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(27, 27, 27, 0.08) 0,
+      rgba(27, 27, 27, 0.08) 12px,
+      rgba(27, 27, 27, 0.14) 12px,
+      rgba(27, 27, 27, 0.14) 24px
+    )
+    #eef2f4;
+}
 .mb-map-preview-image {
   position: absolute;
   inset: 0;
@@ -42,6 +55,17 @@
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
+}
+.mb-map-preview-fallback-text {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
 }
 .mb-map-preview-controls {
   position: relative;
@@ -52,6 +76,13 @@
   gap: 0.75rem;
   padding: 1rem;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+.mb-map-canvas--fallback .mb-map-preview-controls {
+  color: #1f2937;
+  text-shadow: none;
+}
+.mb-map-canvas--fallback .mb-map-preview-controls p {
+  color: inherit;
 }
 .mb-map-load-button {
   background-color: #1b1b1b;
@@ -102,7 +133,7 @@
 }
 </style>
 {{ end }}
-<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}">
+<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-provider="{{ $previewProvider | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
     {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
@@ -309,6 +340,7 @@
         return;
       }
       canvas.classList.remove('mb-map-canvas--preview');
+      canvas.classList.remove('mb-map-canvas--fallback');
       canvas.style.backgroundImage = '';
       canvas.innerHTML = '';
       const map = L.map(mapId, {
@@ -325,17 +357,82 @@
       }
     }
 
-    function buildStaticMapUrl(lat, lng, zoom) {
-      const clampedZoom = Math.max(0, Math.min(zoom, 19));
+    function clampZoom(zoom) {
+      return Math.max(0, Math.min(zoom, 19));
+    }
+
+    function buildStaticMapUrlFor(provider, style, apiKey, lat, lng, zoom, isFallback) {
+      const clampedZoom = clampZoom(zoom);
       const formattedLat = lat.toFixed(6);
       const formattedLng = lng.toFixed(6);
-      const size = '600x338';
+      const width = 600;
+      const height = 338;
+      const normalizedProvider = (provider || '').toString().trim().toLowerCase();
+      const normalizedStyle = (style || '').toString().trim();
+      const normalizedKey = (apiKey || '').toString().trim();
+
+      if (normalizedProvider === 'maptiler') {
+        const styleName = normalizedStyle || 'streets-v2';
+        const apiKeyValue = normalizedKey || (isFallback ? 'get_your_own_D6rA4zTHduk6KOKTx6nI' : '');
+        if (!apiKeyValue) {
+          return null;
+        }
+        const markerColor = 'ff5a1f';
+        return 'https://api.maptiler.com/maps/' + encodeURIComponent(styleName) +
+          '/static/pin-s+' + markerColor + '(' + formattedLng + ',' + formattedLat + ')/' +
+          formattedLng + ',' + formattedLat + ',' + clampedZoom + '/' + width + 'x' + height + '.png?key=' +
+          encodeURIComponent(apiKeyValue);
+      }
+
+      if (normalizedProvider === 'geoapify') {
+        if (!normalizedKey) {
+          return null;
+        }
+        const styleName = normalizedStyle || 'osm-carto';
+        const markerColor = '%23dd2e44';
+        return 'https://maps.geoapify.com/v1/staticmap?style=' + encodeURIComponent(styleName) +
+          '&width=' + width + '&height=' + height +
+          '&center=lonlat:' + encodeURIComponent(formattedLng + ',' + formattedLat) +
+          '&zoom=' + clampedZoom +
+          '&marker=lonlat:' + encodeURIComponent(formattedLng + ',' + formattedLat) +
+          ';type:awesome;color:' + markerColor + ';size:medium&apiKey=' + encodeURIComponent(normalizedKey);
+      }
+
+      // Default to the OpenStreetMap static map service.
       const marker = formattedLat + ',' + formattedLng + ',lightblue1';
       return 'https://staticmap.openstreetmap.de/staticmap.php?center=' +
         encodeURIComponent(formattedLat + ',' + formattedLng) +
         '&zoom=' + clampedZoom +
-        '&size=' + size +
+        '&size=' + width + 'x' + height +
         '&maptype=mapnik&markers=' + encodeURIComponent(marker);
+    }
+
+    function buildStaticMapUrl(wrapper, lat, lng, zoom) {
+      const provider = wrapper.dataset.previewProvider || 'osm';
+      const style = wrapper.dataset.previewStyle || '';
+      const apiKey = wrapper.dataset.previewKey || '';
+      return buildStaticMapUrlFor(provider, style, apiKey, lat, lng, zoom, false);
+    }
+
+    function buildFallbackStaticMapUrl(wrapper, lat, lng, zoom) {
+      const provider = (wrapper.dataset.previewProvider || 'osm').toLowerCase();
+      if (provider === 'maptiler' && wrapper.dataset.previewKey && wrapper.dataset.previewKey.trim()) {
+        return null;
+      }
+      const style = provider === 'maptiler' ? (wrapper.dataset.previewStyle || '') : '';
+      const apiKey = provider === 'maptiler' ? (wrapper.dataset.previewKey || '') : '';
+      return buildStaticMapUrlFor('maptiler', style, apiKey, lat, lng, zoom, true);
+    }
+
+    function showStaticPreviewUnavailable(canvas, message) {
+      canvas.classList.add('mb-map-canvas--fallback');
+      const existingMessage = canvas.querySelector('.mb-map-preview-fallback-text');
+      if (!existingMessage) {
+        const info = document.createElement('p');
+        info.className = 'mb-map-preview-fallback-text';
+        info.textContent = message || 'Static map preview is currently unavailable.';
+        canvas.insertBefore(info, canvas.firstChild || null);
+      }
     }
 
     function showPreview(wrapper, lat, lng, zoom, markerText, locationLabel) {
@@ -346,20 +443,57 @@
       }
       canvas.innerHTML = '';
       canvas.classList.add('mb-map-canvas--preview');
+      canvas.classList.remove('mb-map-canvas--fallback');
 
       const existingImage = canvas.querySelector('img.mb-map-preview-image');
       if (existingImage) {
         existingImage.remove();
       }
 
+      const descriptiveLabel = locationLabel && locationLabel.trim() ? locationLabel.trim() : 'map location';
+      const staticMapUrl = buildStaticMapUrl(wrapper, lat, lng, zoom);
+      const fallbackUrl = buildFallbackStaticMapUrl(wrapper, lat, lng, zoom);
       const img = document.createElement('img');
       img.className = 'mb-map-preview-image';
       img.decoding = 'async';
       img.loading = 'lazy';
-      img.src = buildStaticMapUrl(lat, lng, zoom);
-      const descriptiveLabel = locationLabel && locationLabel.trim() ? locationLabel.trim() : 'map location';
+      img.referrerPolicy = 'no-referrer';
       img.alt = 'Static map preview for ' + descriptiveLabel + '.';
-      canvas.appendChild(img);
+
+      if (staticMapUrl) {
+        img.src = staticMapUrl;
+      } else if (fallbackUrl) {
+        img.src = fallbackUrl;
+      }
+
+      if (staticMapUrl || fallbackUrl) {
+        canvas.appendChild(img);
+      }
+
+      if (staticMapUrl && fallbackUrl) {
+        let retried = false;
+        img.addEventListener('error', function handlePrimaryError() {
+          if (retried) {
+            return;
+          }
+          retried = true;
+          img.src = fallbackUrl;
+        });
+        img.addEventListener('error', function handleFallbackError() {
+          if (!retried) {
+            return;
+          }
+          img.remove();
+          showStaticPreviewUnavailable(canvas);
+        });
+      } else if (staticMapUrl || fallbackUrl) {
+        img.addEventListener('error', function handlePreviewError() {
+          img.remove();
+          showStaticPreviewUnavailable(canvas);
+        });
+      } else {
+        showStaticPreviewUnavailable(canvas);
+      }
 
       const controls = document.createElement('div');
       controls.className = 'mb-map-preview-controls';

@@ -3,7 +3,7 @@
   "title": "Privacy-Friendly Maps",
   "description": "Embed interactive maps powered by OpenStreetMap, with optional privacy notice text.",
   "author": "René Fischer",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "fields": [
     {
       "field": "params.show_privacy_notice",
@@ -21,6 +21,22 @@
       "label": "Default zoom level",
       "type": "string",
       "default": "14"
+    },
+    {
+      "field": "params.map_preview_provider",
+      "label": "Static preview provider (osm, maptiler, geoapify)",
+      "type": "string",
+      "default": "osm"
+    },
+    {
+      "field": "params.map_preview_style",
+      "label": "Static preview style (optional)",
+      "type": "string"
+    },
+    {
+      "field": "params.map_preview_api_key",
+      "label": "Static preview API key (optional)",
+      "type": "string"
     }
   ]
 }
