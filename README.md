@@ -31,6 +31,7 @@ You can configure the following options via your Micro.blog plugin settings:
 - Set the default zoom level (used if no zoom value is set in the shortcode).
 - Provide an optional static preview style (Geoapify theme).
 - Provide the Geoapify API key that is required for static previews.
+- Customize the text shown on the “Show interactive map” button.
 
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
 
@@ -57,6 +58,9 @@ Because the plugin talks directly to OpenStreetMap and Nominatim servers, please
 René Fischer – [https://fischr.org](https://fischr.org)
 
 ## Changelog
+
+### 4.0.1
+- Allow customizing the load button text via the plugin settings and position it below the preview pin.
 
 ### 4.0.0
 - Completely rewrote the plugin to move away from Google Maps and use OpenStreetMap + Geoapify instead.

@@ -7,6 +7,7 @@
 {{ $id := printf "mb-map-%d" (now.UnixNano) }}
 {{ $previewStyle := .Site.Params.map_preview_style | default "" }}
 {{ $previewApiKey := .Site.Params.map_preview_api_key | default "" }}
+{{ $buttonText := .Site.Params.map_load_button_text | default "Show interactive map" }}
 {{ if not (.Page.Scratch.Get "mb-map-style-loaded") }}
 {{ .Page.Scratch.Set "mb-map-style-loaded" true }}
 <style>
@@ -74,6 +75,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
+  margin-top: clamp(3.5rem, 24vh, 11rem);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 }
 .mb-map-canvas--fallback .mb-map-preview-controls {
@@ -132,7 +134,7 @@
 }
 </style>
 {{ end }}
-<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
+<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}" data-button-text="{{ $buttonText | htmlEscape }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
     {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
@@ -453,7 +455,8 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'mb-map-load-button';
-      button.textContent = 'Show interactive map';
+      const buttonLabel = (wrapper.dataset.buttonText || 'Show interactive map').trim() || 'Show interactive map';
+      button.textContent = buttonLabel;
       button.addEventListener('click', function(event) {
         event.preventDefault();
         if (button.disabled) {
