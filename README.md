@@ -42,3 +42,9 @@ Because the plugin talks directly to OpenStreetMap and Nominatim servers, please
 ## 👤 Author
 
 René Fischer – [https://fischr.org](https://fischr.org)
+
+## Changelog
+
+### 4.0.0
+- Completely rewrote the plugin to not use Google Maps anymore. It now relies on OpenStreetMap + Geoapify. If you used the plugin in an older version, please make sure you create your free Geoapify API key and add it to the config. All your posts don't need to be updated. If they worked with Google Maps, they will continue to work with OSM.
+
