@@ -31,6 +31,34 @@
   text-align: center;
   padding: 1rem;
 }
+.mb-map-canvas--preview {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.mb-map-load-button {
+  background-color: #1b1b1b;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+}
+.mb-map-load-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+}
+.mb-map-load-button:focus-visible {
+  outline: 3px solid rgba(30, 64, 175, 0.45);
+  outline-offset: 3px;
+}
+.mb-map-load-button:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
 .mb-map-wrapper .leaflet-container {
   width: 100%;
   height: 100%;
@@ -263,6 +291,8 @@
       if (!canvas) {
         return;
       }
+      canvas.classList.remove('mb-map-canvas--preview');
+      canvas.style.backgroundImage = '';
       canvas.innerHTML = '';
       const map = L.map(mapId, {
         attributionControl: true,
@@ -278,94 +308,127 @@
       }
     }
 
+    function buildStaticMapUrl(lat, lng, zoom) {
+      const clampedZoom = Math.max(0, Math.min(zoom, 19));
+      const formattedLat = lat.toFixed(6);
+      const formattedLng = lng.toFixed(6);
+      const size = '600x338';
+      const marker = formattedLat + ',' + formattedLng + ',lightblue1';
+      return 'https://staticmap.openstreetmap.de/staticmap.php?center=' +
+        encodeURIComponent(formattedLat + ',' + formattedLng) +
+        '&zoom=' + clampedZoom +
+        '&size=' + size +
+        '&maptype=mapnik&markers=' + encodeURIComponent(marker);
+    }
+
+    function showPreview(wrapper, lat, lng, zoom, markerText) {
+      const mapId = wrapper.dataset.mapId;
+      const canvas = document.getElementById(mapId);
+      if (!canvas) {
+        return;
+      }
+      canvas.innerHTML = '';
+      canvas.classList.add('mb-map-canvas--preview');
+      canvas.style.backgroundImage = 'url("' + buildStaticMapUrl(lat, lng, zoom) + '")';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'mb-map-load-button';
+      button.textContent = 'Show interactive map';
+      button.addEventListener('click', function(event) {
+        event.preventDefault();
+        if (button.disabled) {
+          return;
+        }
+        button.disabled = true;
+        button.textContent = 'Loading map…';
+        window.__mbMapEnsureLeaflet(function() {
+          if (!window.L || !window.L.map) {
+            showError(wrapper, 'Leaflet could not be loaded.');
+            return;
+          }
+          wrapper.dataset.mapLoaded = 'true';
+          createMap(wrapper, lat, lng, zoom, markerText);
+        });
+      });
+
+      canvas.appendChild(button);
+    }
+
     function showError(wrapper, message) {
       const mapId = wrapper.dataset.mapId;
       const canvas = document.getElementById(mapId);
       if (canvas) {
+        canvas.classList.remove('mb-map-canvas--preview');
+        canvas.style.backgroundImage = '';
         canvas.textContent = message;
       }
     }
 
     window.__mbMapInitMaps = function() {
-      window.__mbMapEnsureLeaflet(function() {
-        if (!window.L || !window.L.map) {
-          const wrappers = document.querySelectorAll('.mb-map-wrapper');
-          wrappers.forEach(function(wrapper) {
-            if (wrapper.dataset.initialized === 'true') {
-              return;
-            }
-            wrapper.dataset.initialized = 'true';
-            const mapId = wrapper.dataset.mapId;
-            const canvas = document.getElementById(mapId);
-            if (canvas) {
-              canvas.textContent = 'Leaflet could not be loaded.';
-            }
-          });
+      const wrappers = document.querySelectorAll('.mb-map-wrapper');
+      wrappers.forEach(function(wrapper) {
+        if (wrapper.dataset.initialized === 'true') {
           return;
         }
-        const wrappers = document.querySelectorAll('.mb-map-wrapper');
-        wrappers.forEach(function(wrapper) {
-          if (wrapper.dataset.initialized === 'true') {
-            return;
-          }
-          const zoomValue = parseInt(wrapper.dataset.zoom, 10);
-          const zoom = Number.isFinite(zoomValue) ? zoomValue : 14;
-          const locationValue = wrapper.dataset.loc;
-          const markerText = wrapper.dataset.marker ? wrapper.dataset.marker.trim() : '';
-          const normalizedLocation = locationValue ? locationValue.trim().toLowerCase() : '';
-          const coords = parseCoordinates(locationValue);
-          wrapper.dataset.initialized = 'true';
 
-          if (coords) {
-            createMap(wrapper, coords.lat, coords.lng, zoom, markerText);
-            return;
-          }
+        wrapper.dataset.initialized = 'true';
+        const zoomValue = parseInt(wrapper.dataset.zoom, 10);
+        const zoom = Number.isFinite(zoomValue) ? zoomValue : 14;
+        const locationValue = wrapper.dataset.loc;
+        const markerText = wrapper.dataset.marker ? wrapper.dataset.marker.trim() : '';
+        const normalizedLocation = locationValue ? locationValue.trim().toLowerCase() : '';
+        const coords = parseCoordinates(locationValue);
 
-          const mapId = wrapper.dataset.mapId;
-          const canvas = document.getElementById(mapId);
-          if (canvas) {
-            canvas.textContent = 'Searching for location…';
-          }
+        if (coords) {
+          showPreview(wrapper, coords.lat, coords.lng, zoom, markerText);
+          return;
+        }
 
-          const cached = normalizedLocation ? getCachedCoordinates(normalizedLocation) : null;
-          if (cached) {
-            createMap(wrapper, cached.lat, cached.lng, zoom, markerText);
-            return;
-          }
+        const mapId = wrapper.dataset.mapId;
+        const canvas = document.getElementById(mapId);
+        if (canvas) {
+          canvas.textContent = 'Searching for location…';
+        }
 
-          const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(locationValue);
-          fetch(url, {
-            headers: {
-              'Accept-Language': (navigator.language || 'en')
+        const cached = normalizedLocation ? getCachedCoordinates(normalizedLocation) : null;
+        if (cached) {
+          showPreview(wrapper, cached.lat, cached.lng, zoom, markerText);
+          return;
+        }
+
+        const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(locationValue);
+        fetch(url, {
+          headers: {
+            'Accept-Language': (navigator.language || 'en')
+          }
+        })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
             }
+            return response.json();
           })
-            .then(function(response) {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-              return response.json();
-            })
-            .then(function(results) {
-              if (!Array.isArray(results) || results.length === 0) {
-                showError(wrapper, 'Location not found.');
-                return;
-              }
-              const result = results[0];
-              const lat = parseFloat(result.lat);
-              const lng = parseFloat(result.lon);
-              if (!isFinite(lat) || !isFinite(lng)) {
-                showError(wrapper, 'Location not found.');
-                return;
-              }
-              if (normalizedLocation) {
-                setCachedCoordinates(normalizedLocation, { lat: lat, lng: lng });
-              }
-              createMap(wrapper, lat, lng, zoom, markerText);
-            })
-            .catch(function() {
-              showError(wrapper, 'Unable to load the map right now.');
-            });
-        });
+          .then(function(results) {
+            if (!Array.isArray(results) || results.length === 0) {
+              showError(wrapper, 'Location not found.');
+              return;
+            }
+            const result = results[0];
+            const lat = parseFloat(result.lat);
+            const lng = parseFloat(result.lon);
+            if (!isFinite(lat) || !isFinite(lng)) {
+              showError(wrapper, 'Location not found.');
+              return;
+            }
+            if (normalizedLocation) {
+              setCachedCoordinates(normalizedLocation, { lat: lat, lng: lng });
+            }
+            showPreview(wrapper, lat, lng, zoom, markerText);
+          })
+          .catch(function() {
+            showError(wrapper, 'Unable to load the map right now.');
+          });
       });
     };
   }
