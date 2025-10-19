@@ -35,6 +35,22 @@ You can configure the following options via your Micro.blog plugin settings:
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and
 provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
 
+### Migrating from Google Maps to OpenStreetMap
+
+Version 4 introduces a new privacy-friendly architecture that replaces Google Maps with
+OpenStreetMap tiles served via Leaflet. If you are upgrading from an older release:
+
+1. Visit the [Geoapify pricing page](https://www.geoapify.com/pricing) and create a free
+   account. The Free plan currently includes **3000 map tile requests and 3000 static map
+   requests per day**, which is more than enough for most Micro.blog sites.
+2. After signing up, navigate to your Geoapify dashboard and create an API key.
+3. Copy the generated key into the plugin settings field labelled “Geoapify API key”.
+4. Optionally choose one of Geoapify’s static map themes and enter its identifier in the
+   “Static preview style” field (leave blank to keep the default style).
+
+Your existing posts and shortcodes do not need to change—the plugin will automatically use
+the new OpenStreetMap-based renderer once the Geoapify key has been added.
+
 ## Notes
 
 Because the plugin talks directly to OpenStreetMap and Nominatim servers, please make sure your usage adheres to their respective terms of use. Heavy-traffic sites should consider running their own tile and geocoding services. To stay within the Nominatim usage policy, the plugin now caches address lookups for 14 days in the visitor's browser.
