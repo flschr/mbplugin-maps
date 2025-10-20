@@ -208,9 +208,9 @@
       .styles-note {
         margin: 0;
         grid-column: 1 / -1;
-        font-size: 0.82rem;
+        font-size: 0.72rem;
         color: #475569;
-        text-align: center;
+        text-align: left;
       }
 
       .styles-note a {
@@ -358,14 +358,14 @@
             <label>
               Preview style
               <select id="style-select"></select>
+              <span class="styles-note">
+                Need a reference? Browse the official
+                <a href="https://apidocs.geoapify.com/docs/icon/learn-more/" target="_blank" rel="noopener">Geoapify map style catalog</a>
+                to see thumbnails for every style identifier.
+              </span>
             </label>
             <div class="map-frame" id="map-preview"></div>
           </div>
-          <p class="styles-note">
-            Need a reference? Browse the official
-            <a href="https://apidocs.geoapify.com/docs/icon/learn-more/" target="_blank" rel="noopener">Geoapify map style catalog</a>
-            to see thumbnails for every style identifier.
-          </p>
         </div>
       </main>
     </div>
