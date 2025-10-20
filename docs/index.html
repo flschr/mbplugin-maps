@@ -120,8 +120,11 @@
         box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
       }
 
-      button[type="submit"] {
-        justify-self: start;
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
         padding: 0.55rem 1.25rem;
         border-radius: 999px;
         border: none;
@@ -132,11 +135,16 @@
         color: #ffffff;
         box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
       }
 
-      button[type="submit"]:hover {
+      .primary-button:hover {
         transform: translateY(-1px);
         box-shadow: 0 12px 22px rgba(79, 70, 229, 0.25);
+      }
+
+      button[type="submit"] {
+        justify-self: start;
       }
 
       .snippet-card {
@@ -166,22 +174,7 @@
       }
 
       #copy-shortcode {
-        padding: 0.45rem 1.1rem;
-        border-radius: 999px;
-        border: none;
-        background: #0f172a;
-        color: #ffffff;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-
-      #copy-shortcode:hover {
-        background: #1e293b;
-        transform: translateY(-1px);
+        align-self: flex-start;
       }
 
       pre {
@@ -303,7 +296,7 @@
           align-items: flex-start;
         }
 
-        #copy-shortcode {
+        .primary-button {
           width: 100%;
           justify-content: center;
         }
@@ -314,9 +307,6 @@
     <div class="page">
       <header>
         <h1>Micro.blog Maps Validator</h1>
-        <p>
-          Preview your <code>{{&nbsp;map&nbsp;}}</code> shortcode, explore Geoapify map styles, and copy the finished snippet for your post.
-        </p>
       </header>
       <main>
         <div class="layout">
@@ -343,7 +333,7 @@
                 <p class="field-hint" id="geoapify-hint"></p>
               </label>
               <label>
-                Marker text
+                Marker text (optional)
                 <input
                   type="text"
                   name="marker"
@@ -351,13 +341,13 @@
                   value="Brandenburg Gate"
                 />
               </label>
-              <button type="submit">Refresh preview</button>
+              <button type="submit" class="primary-button">Refresh preview</button>
             </form>
 
             <div class="snippet-card">
               <div class="snippet-header">
                 <h2>Shortcode</h2>
-                <button type="button" id="copy-shortcode" aria-live="polite">Copy snippet</button>
+                <button type="button" id="copy-shortcode" class="primary-button" aria-live="polite">Copy snippet</button>
               </div>
               <pre><code id="shortcode-output"></code></pre>
               <p class="status-message" id="status-message" role="status"></p>
@@ -411,13 +401,13 @@
         const fallbackTiles = {
           url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           options: {
-            maxZoom: 19,
+            maxZoom: 18,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           }
         };
 
         const geoapifyTileOptions = {
-          maxZoom: 20,
+          maxZoom: 18,
           attribution:
             'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Tiles &copy; <a href="https://www.geoapify.com/">Geoapify</a>'
         };
@@ -499,7 +489,7 @@
         populateSelect(styleSelect, 'osm-carto');
 
         function createPreview(select, containerId) {
-          const map = L.map(containerId, { zoomControl: true });
+          const map = L.map(containerId, { zoomControl: true, maxZoom: 18 });
           const preview = {
             map: map,
             select: select,
@@ -578,16 +568,30 @@
           return { lat: lat, lng: lng };
         }
 
+        function clampZoomValue(value) {
+          if (!Number.isFinite(value)) {
+            return null;
+          }
+          return Math.min(18, Math.max(1, value));
+        }
+
         function updateShortcode() {
           const loc = form.loc.value.trim();
-          const zoom = form.zoom.value.trim();
+          const zoomRaw = form.zoom.value.trim();
           const marker = form.marker.value.trim();
           let snippet = '{{< map';
           if (loc) {
             snippet += ' loc="' + loc.replace(/"/g, '\\"') + '"';
           }
-          if (zoom) {
-            snippet += ' zoom="' + zoom + '"';
+          if (zoomRaw) {
+            const parsedZoom = parseInt(zoomRaw, 10);
+            const clampedZoom = clampZoomValue(parsedZoom);
+            if (clampedZoom !== null) {
+              snippet += ' zoom="' + clampedZoom + '"';
+              if (clampedZoom.toString() !== zoomRaw) {
+                form.zoom.value = clampedZoom;
+              }
+            }
           }
           if (marker) {
             snippet += ' marker="' + marker.replace(/"/g, '\\"') + '"';
@@ -674,7 +678,8 @@
         form.addEventListener('submit', function(event) {
           event.preventDefault();
           const loc = form.loc.value.trim();
-          const zoom = Math.min(18, Math.max(1, parseInt(form.zoom.value, 10) || 12));
+          const zoom = clampZoomValue(parseInt(form.zoom.value, 10)) || 12;
+          form.zoom.value = zoom;
           const markerText = form.marker.value.trim();
           updateShortcode();
           geocodeLocation(loc, zoom, markerText);
@@ -702,7 +707,8 @@
         // Initial render
         updateShortcode();
         const initialLoc = form.loc.value.trim();
-        const initialZoom = parseInt(form.zoom.value, 10) || 12;
+        const initialZoom = clampZoomValue(parseInt(form.zoom.value, 10)) || 12;
+        form.zoom.value = initialZoom;
         const initialMarker = form.marker.value.trim();
         geocodeLocation(initialLoc, initialZoom, initialMarker);
 
