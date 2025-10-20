@@ -27,11 +27,12 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        align-items: center;
       }
 
       header {
         padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1rem, 3vw, 2.25rem) clamp(1.25rem, 3vw, 1.75rem);
-        text-align: left;
+        text-align: center;
         max-width: 960px;
         margin: 0 auto;
         width: 100%;
@@ -54,6 +55,8 @@
       main {
         flex: 1;
         width: 100%;
+        display: flex;
+        justify-content: center;
       }
 
       .layout {
@@ -63,6 +66,7 @@
         align-items: start;
         padding: 0 clamp(1rem, 3vw, 2.25rem) clamp(2rem, 5vw, 3rem);
         max-width: 960px;
+        width: 100%;
         margin: 0 auto;
         box-sizing: border-box;
       }
@@ -199,12 +203,6 @@
         word-break: break-word;
       }
 
-      .previews {
-        display: flex;
-        flex-direction: column;
-        gap: clamp(0.85rem, 2vw, 1.35rem);
-      }
-
       .field-hint {
         margin: 0;
         font-size: 0.75rem;
@@ -219,6 +217,7 @@
         grid-column: 1 / -1;
         font-size: 0.82rem;
         color: #475569;
+        text-align: center;
       }
 
       .styles-note a {
@@ -299,15 +298,6 @@
           grid-template-columns: 1fr;
         }
 
-        header {
-          text-align: center;
-        }
-
-        header p {
-          margin-left: auto;
-          margin-right: auto;
-        }
-
         .snippet-header {
           flex-direction: column;
           align-items: flex-start;
@@ -325,8 +315,7 @@
       <header>
         <h1>Micro.blog Maps Validator</h1>
         <p>
-          Preview your <code>{{&nbsp;map&nbsp;}}</code> shortcode, compare two Geoapify map styles side by side, and copy the finished snippet for
-          your post.
+          Preview your <code>{{&nbsp;map&nbsp;}}</code> shortcode, explore Geoapify map styles, and copy the finished snippet for your post.
         </p>
       </header>
       <main>
@@ -355,7 +344,12 @@
               </label>
               <label>
                 Marker text
-                <textarea name="marker" placeholder="Optional description for the marker">Brandenburg Gate</textarea>
+                <input
+                  type="text"
+                  name="marker"
+                  placeholder="Optional description for the marker"
+                  value="Brandenburg Gate"
+                />
               </label>
               <button type="submit">Refresh preview</button>
             </form>
@@ -370,21 +364,12 @@
             </div>
           </div>
 
-          <div class="previews">
-            <div class="preview-card">
-              <label>
-                Preview style A
-                <select id="style-a"></select>
-              </label>
-              <div class="map-frame" id="map-a"></div>
-            </div>
-            <div class="preview-card">
-              <label>
-                Preview style B
-                <select id="style-b"></select>
-              </label>
-              <div class="map-frame" id="map-b"></div>
-            </div>
+          <div class="preview-card">
+            <label>
+              Preview style
+              <select id="style-select"></select>
+            </label>
+            <div class="map-frame" id="map-preview"></div>
           </div>
           <p class="styles-note">
             Need a reference? Browse the official
@@ -449,8 +434,7 @@
         const shortcodeOutput = document.getElementById('shortcode-output');
         const copyButton = document.getElementById('copy-shortcode');
         const statusMessage = document.getElementById('status-message');
-        const styleSelectA = document.getElementById('style-a');
-        const styleSelectB = document.getElementById('style-b');
+        const styleSelect = document.getElementById('style-select');
         const geoapifyHint = document.getElementById('geoapify-hint');
         const tileKeyInput = document.getElementById('tile-key');
         const previews = [];
@@ -512,8 +496,7 @@
           select.value = defaultValue;
         }
 
-        populateSelect(styleSelectA, 'osm-carto');
-        populateSelect(styleSelectB, 'dark-matter');
+        populateSelect(styleSelect, 'osm-carto');
 
         function createPreview(select, containerId) {
           const map = L.map(containerId, { zoomControl: true });
@@ -577,8 +560,7 @@
           return preview;
         }
 
-        const previewA = createPreview(styleSelectA, 'map-a');
-        const previewB = createPreview(styleSelectB, 'map-b');
+        createPreview(styleSelect, 'map-preview');
 
         function parseCoordinates(value) {
           if (!value) {
@@ -639,7 +621,7 @@
         }
 
         function updatePreviews(latlng, zoom, markerText) {
-          [previewA, previewB].forEach(function(preview) {
+          previews.forEach(function(preview) {
             preview.map.setView(latlng, zoom);
             updateMarker(preview, latlng, markerText);
             preview.map.invalidateSize();
