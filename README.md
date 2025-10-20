@@ -48,11 +48,9 @@ You can configure the following options via your Micro.blog plugin settings:
 - Provide optional static preview styles (Geoapify themes) for light and dark mode.
 - Provide the Geoapify API key that is required for static previews.
 
-Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
+Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Choose your preferred map theme and enter a valid Geoapify API key so the preview image loads correctly.
 
-The general “Geoapify preview style” acts as the fallback used for both light and dark previews. If you additionally enter identifiers in the dedicated light/dark fields, the plugin will switch to those styles whenever the visitor’s color scheme changes. When a mode-specific value is missing, the fallback style is used automatically.
-
-You can optionally set dedicated Geoapify style identifiers for light and dark mode. The plugin will automatically switch the static preview to the matching style when the site’s color scheme changes, falling back to the general style if a mode-specific value is not configured.
+The general “Geoapify preview style” setting serves as the fallback for both light and dark previews. You can optionally provide separate style identifiers for light and dark mode; the plugin automatically selects the matching style when the visitor’s color scheme changes and falls back to the general style whenever a mode-specific value is missing.
 
 ### Migrating from Google Maps to OpenStreetMap
 
