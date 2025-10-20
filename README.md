@@ -1,6 +1,6 @@
 # Embed interactive maps powered by OpenStreetMap easily and privacy-friendly to your Micro.blog posts.
 
-<img src="logo.png" alt="Map embeds for Micro.blog" width="200">
+<img src="plugin-logo.png" alt="OSM Map embeds for Micro.blog">
 
 This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap, and Geoapify to generate static preview images of the embedded map. After clicking the static preview, the interactive OSM map is loaded. An optional privacy notice overlay can be shown on the static preview image.
 
