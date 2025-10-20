@@ -22,6 +22,10 @@ Add the following shortcode to a blog post to embed a map:
 
 The `loc` parameter accepts either coordinates (e.g. `48.1351,11.5820`) or address strings (e.g. `Marienplatz, München`). If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. Address lookups are performed via [Nominatim](https://nominatim.openstreetmap.org/). Optionally, provide a `marker` value to show a popup when the marker is clicked.
 
+### Preview of the embed
+
+<img src="preview.webp" alt="Embedded OSM in a Micro.blog posting">
+
 You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
 
 ## Configuration
