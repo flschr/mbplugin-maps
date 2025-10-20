@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,25 +30,25 @@
       }
 
       header {
-        padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem) 1.5rem;
+        padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1rem, 3vw, 2.25rem) clamp(1.25rem, 3vw, 1.75rem);
         text-align: left;
-        max-width: 1100px;
+        max-width: 960px;
         margin: 0 auto;
         width: 100%;
       }
 
       header h1 {
-        margin: 0 0 0.75rem;
-        font-size: clamp(2rem, 5vw, 3rem);
+        margin: 0 0 0.5rem;
+        font-size: clamp(1.85rem, 4vw, 2.65rem);
         font-weight: 700;
         letter-spacing: -0.01em;
       }
 
       header p {
         margin: 0;
-        max-width: 680px;
+        max-width: 640px;
         color: #475569;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
       }
 
       main {
@@ -58,11 +58,11 @@
 
       .layout {
         display: grid;
-        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-        gap: clamp(1.5rem, 4vw, 3rem);
+        grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+        gap: clamp(1.25rem, 3vw, 2rem);
         align-items: start;
-        padding: 0 clamp(1.5rem, 4vw, 3rem) clamp(2.5rem, 6vw, 4rem);
-        max-width: 1100px;
+        padding: 0 clamp(1rem, 3vw, 2.25rem) clamp(2rem, 5vw, 3rem);
+        max-width: 960px;
         margin: 0 auto;
         box-sizing: border-box;
       }
@@ -70,23 +70,23 @@
       .config-panel {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 1.5rem;
       }
 
       form {
         display: grid;
-        gap: 1.25rem;
-        padding: clamp(1.75rem, 3vw, 2.5rem);
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-        background: #f8fafc;
+        gap: 1rem;
+        padding: clamp(1.25rem, 2.5vw, 1.75rem);
+        border: 1px solid #dce3f1;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
       }
 
       form label {
         display: grid;
-        gap: 0.4rem;
-        font-size: 0.95rem;
+        gap: 0.35rem;
+        font-size: 0.82rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -96,7 +96,7 @@
       form input,
       form textarea {
         font: inherit;
-        padding: 0.65rem 0.75rem;
+        padding: 0.55rem 0.7rem;
         border-radius: 10px;
         border: 1px solid #cbd5f5;
         background: #ffffff;
@@ -106,63 +106,63 @@
       }
 
       form textarea {
-        min-height: 90px;
+        min-height: 80px;
       }
 
       form input:focus,
       form textarea:focus {
         outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.18);
       }
 
       button[type="submit"] {
         justify-self: start;
-        padding: 0.75rem 1.75rem;
+        padding: 0.6rem 1.4rem;
         border-radius: 999px;
         border: none;
-        font-weight: 700;
-        font-size: 1rem;
+        font-weight: 600;
+        font-size: 0.95rem;
         cursor: pointer;
-        background: linear-gradient(135deg, #6366f1, #38bdf8);
+        background: linear-gradient(135deg, #4f46e5, #38bdf8);
         color: #ffffff;
-        box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
+        box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
       button[type="submit"]:hover {
         transform: translateY(-1px);
-        box-shadow: 0 16px 32px rgba(56, 189, 248, 0.25);
+        box-shadow: 0 12px 22px rgba(79, 70, 229, 0.25);
       }
 
       .snippet-card {
-        padding: clamp(1.75rem, 3vw, 2.25rem);
-        border-radius: 18px;
-        border: 1px solid #e2e8f0;
+        padding: clamp(1.25rem, 2.5vw, 1.75rem);
+        border-radius: 14px;
+        border: 1px solid #dce3f1;
         background: #ffffff;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
       .snippet-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
       .snippet-header h2 {
         margin: 0;
-        font-size: 1.05rem;
-        letter-spacing: 0.04em;
+        font-size: 0.92rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
         color: #475569;
       }
 
       #copy-shortcode {
-        padding: 0.55rem 1.25rem;
+        padding: 0.45rem 1.1rem;
         border-radius: 999px;
         border: none;
         background: #0f172a;
@@ -171,7 +171,7 @@
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
+        gap: 0.3rem;
         transition: background 0.2s ease, transform 0.2s ease;
       }
 
@@ -182,13 +182,13 @@
 
       pre {
         margin: 0;
-        padding: 1.5rem;
-        border-radius: 14px;
+        padding: 1.1rem;
+        border-radius: 12px;
         background: #0f172a;
         color: #f8fafc;
-        font-size: 1rem;
+        font-size: 0.92rem;
         overflow-x: auto;
-        min-height: 140px;
+        min-height: 110px;
         display: flex;
         align-items: flex-start;
       }
@@ -202,24 +202,31 @@
       .previews {
         display: flex;
         flex-direction: column;
-        gap: clamp(1.5rem, 3vw, 2rem);
+        gap: clamp(1rem, 2vw, 1.5rem);
+      }
+
+      .preview-hint {
+        margin: 0;
+        font-size: 0.78rem;
+        color: #b45309;
+        min-height: 1rem;
       }
 
       .preview-card {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: clamp(1.5rem, 3vw, 2rem);
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        gap: 0.75rem;
+        background: #ffffff;
+        border: 1px solid #dce3f1;
+        border-radius: 14px;
+        padding: clamp(1rem, 2vw, 1.4rem);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
       }
 
       .preview-card label {
         display: grid;
-        gap: 0.35rem;
-        font-size: 0.9rem;
+        gap: 0.3rem;
+        font-size: 0.8rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -228,8 +235,8 @@
 
       .preview-card select {
         font: inherit;
-        padding: 0.55rem 0.75rem;
-        border-radius: 10px;
+        padding: 0.45rem 0.65rem;
+        border-radius: 8px;
         border: 1px solid #cbd5f5;
         background: #ffffff;
         color: inherit;
@@ -238,11 +245,11 @@
       .map-frame {
         position: relative;
         width: 100%;
-        border-radius: 16px;
+        border-radius: 12px;
         overflow: hidden;
-        min-height: 320px;
+        min-height: 260px;
         background: #e2e8f0;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 4 / 3;
       }
 
       .leaflet-container {
@@ -252,9 +259,9 @@
 
       .status-message {
         margin: 0;
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         color: #0f172a;
-        min-height: 1.5rem;
+        min-height: 1.25rem;
       }
 
       .status-message[data-state="loading"] {
@@ -267,6 +274,10 @@
 
       .status-message[data-state="success"] {
         color: #047857;
+      }
+
+      .status-message[data-state="notice"] {
+        color: #b45309;
       }
 
       @media (max-width: 900px) {
@@ -300,8 +311,8 @@
       <header>
         <h1>Micro.blog Maps Validator</h1>
         <p>
-          Teste deinen <code>{{&nbsp;map&nbsp;}}</code>-Shortcode live, vergleiche zwei Karten-Styles nebeneinander und kopiere
-          den fertigen Code direkt in die Zwischenablage.
+          Preview your <code>{{&nbsp;map&nbsp;}}</code> shortcode, compare two Geoapify map styles side by side, and copy the finished snippet for
+          your post.
         </p>
       </header>
       <main>
@@ -309,24 +320,28 @@
           <div class="config-panel">
             <form id="map-config">
               <label>
-                Standort / Koordinaten
-                <input type="text" name="loc" value="Berlin, Deutschland" placeholder="z. B. 52.5200, 13.4050" required />
+                Location / coordinates
+                <input type="text" name="loc" value="Berlin, Germany" placeholder="e.g. 52.5200, 13.4050" required />
               </label>
               <label>
-                Zoom-Level (1–18)
+                Zoom level (1–18)
                 <input type="number" name="zoom" min="1" max="18" value="12" />
               </label>
               <label>
-                Marker-Text
-                <textarea name="marker" placeholder="Optionale Beschreibung für den Marker">Brandenburger Tor</textarea>
+                Geoapify API key (optional)
+                <input type="text" name="tile-key" id="tile-key" autocomplete="off" placeholder="Paste your Geoapify key to load live styles" />
               </label>
-              <button type="submit">Vorschau aktualisieren</button>
+              <label>
+                Marker text
+                <textarea name="marker" placeholder="Optional description for the marker">Brandenburg Gate</textarea>
+              </label>
+              <button type="submit">Refresh preview</button>
             </form>
 
             <div class="snippet-card">
               <div class="snippet-header">
                 <h2>Shortcode</h2>
-                <button type="button" id="copy-shortcode" aria-live="polite">Copy</button>
+                <button type="button" id="copy-shortcode" aria-live="polite">Copy snippet</button>
               </div>
               <pre><code id="shortcode-output"></code></pre>
               <p class="status-message" id="status-message" role="status"></p>
@@ -334,16 +349,17 @@
           </div>
 
           <div class="previews">
+            <p class="preview-hint" id="geoapify-hint"></p>
             <div class="preview-card">
               <label>
-                Preview Style A
+                Preview style A
                 <select id="style-a"></select>
               </label>
               <div class="map-frame" id="map-a"></div>
             </div>
             <div class="preview-card">
               <label>
-                Preview Style B
+                Preview style B
                 <select id="style-b"></select>
               </label>
               <div class="map-frame" id="map-b"></div>
@@ -360,61 +376,40 @@
     ></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        const styleLibrary = [
-          {
-            value: 'osm-carto',
-            label: 'OSM Carto (Standard)',
-            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            options: {
-              maxZoom: 19,
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende'
-            }
-          },
-          {
-            value: 'carto-light',
-            label: 'Carto Light',
-            url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-            options: {
-              maxZoom: 19,
-              subdomains: 'abcd',
-              attribution:
-                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            }
-          },
-          {
-            value: 'carto-dark',
-            label: 'Carto Dark Matter',
-            url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-            options: {
-              maxZoom: 19,
-              subdomains: 'abcd',
-              attribution:
-                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            }
-          },
-          {
-            value: 'stamen-terrain',
-            label: 'Stamen Terrain',
-            url: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
-            options: {
-              maxZoom: 18,
-              subdomains: 'abcd',
-              attribution:
-                'Map tiles by <a href="https://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende'
-            }
-          },
-          {
-            value: 'stamen-toner',
-            label: 'Stamen Toner',
-            url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
-            options: {
-              maxZoom: 20,
-              subdomains: 'abcd',
-              attribution:
-                'Map tiles by <a href="https://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende'
-            }
-          }
+        const geoapifyStyles = [
+          { value: 'osm-carto', label: 'Geoapify · OSM Carto' },
+          { value: 'osm-bright', label: 'Geoapify · OSM Bright' },
+          { value: 'osm-dark', label: 'Geoapify · OSM Dark' },
+          { value: 'osm-liberty', label: 'Geoapify · OSM Liberty' },
+          { value: 'voyager', label: 'Geoapify · Voyager' },
+          { value: 'dark-matter', label: 'Geoapify · Dark Matter' },
+          { value: 'positron', label: 'Geoapify · Positron' },
+          { value: 'navigation-day', label: 'Geoapify · Navigation Day' },
+          { value: 'navigation-night', label: 'Geoapify · Navigation Night' },
+          { value: 'minimal', label: 'Geoapify · Minimal' }
         ];
+
+        const fallbackTiles = {
+          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          options: {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }
+        };
+
+        const geoapifyTileOptions = {
+          maxZoom: 20,
+          attribution:
+            'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Tiles &copy; <a href="https://www.geoapify.com/">Geoapify</a>'
+        };
+
+        const storageKey = 'mb-map-validator-geoapify-key';
+        let storedTileKey = '';
+        try {
+          storedTileKey = localStorage.getItem(storageKey) || '';
+        } catch (error) {
+          storedTileKey = '';
+        }
 
         const form = document.getElementById('map-config');
         const shortcodeOutput = document.getElementById('shortcode-output');
@@ -422,9 +417,59 @@
         const statusMessage = document.getElementById('status-message');
         const styleSelectA = document.getElementById('style-a');
         const styleSelectB = document.getElementById('style-b');
+        const geoapifyHint = document.getElementById('geoapify-hint');
+        const tileKeyInput = document.getElementById('tile-key');
+        const previews = [];
+
+        if (tileKeyInput && storedTileKey) {
+          tileKeyInput.value = storedTileKey;
+        }
+
+        function buildGeoapifyTileUrl(styleId) {
+          if (!styleId) {
+            return null;
+          }
+          const apiKey = tileKeyInput ? tileKeyInput.value.trim() : '';
+          if (!apiKey) {
+            return null;
+          }
+          return 'https://maps.geoapify.com/v1/tile/' + styleId + '/{z}/{x}/{y}.png?apiKey=' + encodeURIComponent(apiKey);
+        }
+
+        function getTileConfig(style) {
+          const tileUrl = buildGeoapifyTileUrl(style.value);
+          if (!tileUrl) {
+            return {
+              url: fallbackTiles.url,
+              options: Object.assign({}, fallbackTiles.options),
+              usingFallback: true
+            };
+          }
+
+          return {
+            url: tileUrl,
+            options: Object.assign({}, geoapifyTileOptions),
+            usingFallback: false
+          };
+        }
+
+        function refreshGeoapifyHint() {
+          if (!geoapifyHint) {
+            return;
+          }
+          const needsKey = previews.some(function(preview) {
+            return preview.usingFallback;
+          });
+          if (needsKey) {
+            geoapifyHint.textContent =
+              'Enter your Geoapify API key above to load live tiles. Showing OpenStreetMap tiles as a fallback.';
+          } else {
+            geoapifyHint.textContent = '';
+          }
+        }
 
         function populateSelect(select, defaultValue) {
-          styleLibrary.forEach(function(style) {
+          geoapifyStyles.forEach(function(style) {
             const option = document.createElement('option');
             option.value = style.value;
             option.textContent = style.label;
@@ -434,7 +479,7 @@
         }
 
         populateSelect(styleSelectA, 'osm-carto');
-        populateSelect(styleSelectB, 'carto-dark');
+        populateSelect(styleSelectB, 'navigation-night');
 
         function createPreview(select, containerId) {
           const map = L.map(containerId, { zoomControl: true });
@@ -442,20 +487,50 @@
             map: map,
             select: select,
             currentLayer: null,
-            marker: null
+            marker: null,
+            handleTileError: null,
+            usingFallback: false
           };
 
+          previews.push(preview);
+
           function applyStyle(styleValue) {
-            const style = styleLibrary.find(function(item) {
+            const style = geoapifyStyles.find(function(item) {
               return item.value === styleValue;
-            }) || styleLibrary[0];
+            }) || geoapifyStyles[0];
 
             if (preview.currentLayer) {
+              if (preview.handleTileError) {
+                preview.currentLayer.off('tileerror', preview.handleTileError);
+                preview.handleTileError = null;
+              }
               preview.map.removeLayer(preview.currentLayer);
             }
 
-            preview.currentLayer = L.tileLayer(style.url, style.options || {});
-            preview.currentLayer.addTo(preview.map);
+            const config = getTileConfig(style);
+            const layer = L.tileLayer(config.url, config.options || {});
+            preview.currentLayer = layer;
+            preview.usingFallback = config.usingFallback;
+
+            if (!config.usingFallback) {
+              const handleTileError = function() {
+                layer.off('tileerror', handleTileError);
+                preview.map.removeLayer(layer);
+                const fallbackLayer = L.tileLayer(fallbackTiles.url, fallbackTiles.options || {});
+                fallbackLayer.addTo(preview.map);
+                preview.currentLayer = fallbackLayer;
+                preview.usingFallback = true;
+                preview.handleTileError = null;
+                refreshGeoapifyHint();
+              };
+              preview.handleTileError = handleTileError;
+              layer.on('tileerror', handleTileError);
+            } else {
+              preview.handleTileError = null;
+            }
+
+            layer.addTo(preview.map);
+            refreshGeoapifyHint();
           }
 
           preview.applyStyle = applyStyle;
@@ -539,7 +614,7 @@
 
         function handleSuccess(latlng, zoom, markerText) {
           updatePreviews(latlng, zoom, markerText);
-          setStatus('Vorschau aktualisiert.', 'success');
+          setStatus('Preview updated.', 'success');
         }
 
         function geocodeLocation(loc, zoom, markerText) {
@@ -549,34 +624,34 @@
             return;
           }
 
-          setStatus('Standort wird gesucht …', 'loading');
+          setStatus('Looking up the location …', 'loading');
           const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(loc);
           fetch(url, {
             headers: {
-              'Accept-Language': navigator.language || 'de'
+              'Accept-Language': navigator.language || 'en'
             },
             referrerPolicy: 'no-referrer-when-downgrade'
           })
             .then(function(response) {
               if (!response.ok) {
-                throw new Error('Standortsuche fehlgeschlagen.');
+                throw new Error('Location search failed.');
               }
               return response.json();
             })
             .then(function(result) {
               if (!Array.isArray(result) || result.length === 0) {
-                throw new Error('Kein Ergebnis für "' + loc + '" gefunden.');
+                throw new Error('No results for "' + loc + '".');
               }
               const item = result[0];
               const lat = parseFloat(item.lat);
               const lng = parseFloat(item.lon);
               if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-                throw new Error('Ungültige Koordinaten erhalten.');
+                throw new Error('Received invalid coordinates.');
               }
               handleSuccess({ lat: lat, lng: lng }, zoom, markerText);
             })
             .catch(function(error) {
-              setStatus(error.message || 'Standort konnte nicht geladen werden.', 'error');
+              setStatus(error.message || 'Could not load the location.', 'error');
             });
         }
 
@@ -601,10 +676,10 @@
           navigator.clipboard
             .writeText(code)
             .then(function() {
-              setStatus('Shortcode kopiert!', 'success');
+              setStatus('Shortcode copied to clipboard.', 'success');
             })
             .catch(function() {
-              setStatus('Konnte nicht kopieren. Bitte manuell kopieren.', 'error');
+              setStatus('Could not copy automatically. Please copy manually.', 'error');
             });
         });
 
@@ -614,6 +689,28 @@
         const initialZoom = parseInt(form.zoom.value, 10) || 12;
         const initialMarker = form.marker.value.trim();
         geocodeLocation(initialLoc, initialZoom, initialMarker);
+
+        function persistTileKey(value) {
+          try {
+            if (value) {
+              localStorage.setItem(storageKey, value);
+            } else {
+              localStorage.removeItem(storageKey);
+            }
+          } catch (error) {
+            // ignore persistence errors
+          }
+        }
+
+        if (tileKeyInput) {
+          tileKeyInput.addEventListener('input', function() {
+            const key = tileKeyInput.value.trim();
+            persistTileKey(key);
+            previews.forEach(function(preview) {
+              preview.applyStyle(preview.select.value);
+            });
+          });
+        }
       });
     </script>
   </body>
