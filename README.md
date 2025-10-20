@@ -40,10 +40,7 @@ You can see the plugin in action here: [Example Post](https://fischr.org/2017/09
 
 ### Try your settings in a browser
 
-The repository ships with a standalone simulator in [`map-simulator/index.html`](map-simulator/index.html). Open the file in a
-browser (or host it via GitHub Pages) and enter the same `loc`, `zoom`, `marker` and preview-style values that you would pass to
-the shortcode. The page renders the static preview and lets you load the interactive map so you can verify the final embed
-before publishing.
+The repository ships with a standalone [`Micro.blog OSM Embed Validator`](https://flschr.github.io/mbplugin-maps/). Try our your `loc`, `zoom`, `marker` and preview-style values that you would pass to the shortcode. The page renders the map so you can verify the final embed before publishing it or deciding which map style you want to use.
 
 ## Configuration
 
