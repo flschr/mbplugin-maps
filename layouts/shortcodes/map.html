@@ -7,7 +7,6 @@
 {{ $id := printf "mb-map-%d" (now.UnixNano) }}
 {{ $previewStyle := .Site.Params.map_preview_style | default "" }}
 {{ $previewApiKey := .Site.Params.map_preview_api_key | default "" }}
-{{ $buttonText := .Site.Params.map_load_button_text | default "Show interactive map" }}
 {{ if not (.Page.Scratch.Get "mb-map-style-loaded") }}
 {{ .Page.Scratch.Set "mb-map-style-loaded" true }}
 <style>
@@ -37,6 +36,10 @@
 .mb-map-canvas--preview {
   flex-direction: column;
   gap: 1rem;
+  cursor: pointer;
+}
+.mb-map-canvas--preview * {
+  cursor: inherit;
 }
 .mb-map-canvas--fallback {
   background: repeating-linear-gradient(
@@ -85,32 +88,26 @@
 .mb-map-canvas--fallback .mb-map-preview-controls p {
   color: inherit;
 }
-.mb-map-load-button {
-  background-color: #1b1b1b;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  font-weight: 600;
-  padding: 0.65rem 1.25rem;
-  cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
-}
-.mb-map-load-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
-}
-.mb-map-load-button:focus-visible {
-  outline: 3px solid rgba(30, 64, 175, 0.45);
-  outline-offset: 3px;
-}
-.mb-map-load-button:disabled {
-  opacity: 0.75;
-  cursor: wait;
+.mb-map-preview-caption {
+  margin: 0;
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
 }
 .mb-map-wrapper .leaflet-container {
   width: 100%;
   height: 100%;
+}
+.mb-map-loading-text {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(27, 27, 27, 0.85);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 .mb-map-overlay {
   position: absolute;
@@ -134,7 +131,7 @@
 }
 </style>
 {{ end }}
-<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}" data-button-text="{{ $buttonText | htmlEscape }}">
+<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
     {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
@@ -342,6 +339,7 @@
       }
       canvas.classList.remove('mb-map-canvas--preview');
       canvas.classList.remove('mb-map-canvas--fallback');
+      canvas.classList.remove('mb-map-canvas--loading');
       canvas.style.backgroundImage = '';
       canvas.innerHTML = '';
       const map = L.map(mapId, {
@@ -353,9 +351,14 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
       const marker = L.marker([lat, lng]).addTo(map);
-      if (markerText && markerText.trim()) {
-        marker.bindPopup(markerText).openPopup();
+      const cleanedMarkerText = typeof markerText === 'string' ? markerText.trim() : '';
+      if (cleanedMarkerText) {
+        marker.bindPopup(cleanedMarkerText).openPopup();
       }
+      setTimeout(function() {
+        map.invalidateSize();
+        map.setView([lat, lng], zoom);
+      }, 0);
     }
 
     function clampZoom(zoom) {
@@ -418,6 +421,7 @@
       }
 
       const descriptiveLabel = locationLabel && locationLabel.trim() ? locationLabel.trim() : 'map location';
+      const trimmedMarkerText = typeof markerText === 'string' ? markerText.trim() : '';
       const previewKey = (wrapper.dataset.previewKey || '').trim();
       if (!previewKey) {
         showStaticPreviewUnavailable(canvas, 'Static map preview requires a Geoapify API key.');
@@ -452,37 +456,72 @@
       const controls = document.createElement('div');
       controls.className = 'mb-map-preview-controls';
 
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'mb-map-load-button';
-      const buttonLabel = (wrapper.dataset.buttonText || 'Show interactive map').trim() || 'Show interactive map';
-      button.textContent = buttonLabel;
-      button.addEventListener('click', function(event) {
-        event.preventDefault();
-        if (button.disabled) {
-          return;
-        }
-        button.disabled = true;
-        button.textContent = 'Loading map…';
-        window.__mbMapEnsureLeaflet(function() {
-          if (!window.L || !window.L.map) {
-            showError(wrapper, 'Leaflet could not be loaded.');
-            return;
-          }
-          wrapper.dataset.mapLoaded = 'true';
-          createMap(wrapper, lat, lng, zoom, markerText);
-        });
-      });
-
-      controls.appendChild(button);
-
-      if (markerText && markerText.trim()) {
+      if (trimmedMarkerText) {
         const caption = document.createElement('p');
-        caption.textContent = markerText.trim();
+        caption.className = 'mb-map-preview-caption';
+        caption.textContent = trimmedMarkerText;
         controls.appendChild(caption);
       }
 
-      canvas.appendChild(controls);
+      if (controls.childElementCount > 0) {
+        canvas.appendChild(controls);
+      }
+
+      const markerDescription = trimmedMarkerText ? '. Marker: ' + trimmedMarkerText : '';
+      const accessibleLabel = 'Load interactive map for ' + descriptiveLabel + markerDescription;
+      canvas.setAttribute('role', 'button');
+      canvas.setAttribute('tabindex', '0');
+      canvas.setAttribute('aria-label', accessibleLabel);
+
+      function cleanupPreviewInteractions() {
+        canvas.removeEventListener('click', handlePreviewClick);
+        canvas.removeEventListener('keydown', handlePreviewKeydown);
+        canvas.removeAttribute('role');
+        canvas.removeAttribute('tabindex');
+        canvas.removeAttribute('aria-label');
+        canvas.removeAttribute('aria-busy');
+      }
+
+      function handlePreviewClick(event) {
+        event.preventDefault();
+        if (wrapper.dataset.mapLoaded === 'true' || wrapper.dataset.mapLoading === 'true') {
+          return;
+        }
+        wrapper.dataset.mapLoading = 'true';
+        canvas.setAttribute('aria-busy', 'true');
+        if (!canvas.classList.contains('mb-map-canvas--preview')) {
+          canvas.textContent = '';
+        }
+        const loadingText = document.createElement('div');
+        loadingText.className = 'mb-map-loading-text';
+        loadingText.textContent = 'Loading map…';
+        canvas.appendChild(loadingText);
+
+        window.__mbMapEnsureLeaflet(function() {
+          canvas.removeAttribute('aria-busy');
+          delete wrapper.dataset.mapLoading;
+          if (!window.L || !window.L.map) {
+            if (loadingText.parentNode) {
+              loadingText.remove();
+            }
+            showError(wrapper, 'Leaflet could not be loaded.');
+            return;
+          }
+          cleanupPreviewInteractions();
+          createMap(wrapper, lat, lng, zoom, markerText);
+          wrapper.dataset.mapLoaded = 'true';
+        });
+      }
+
+      function handlePreviewKeydown(event) {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+          event.preventDefault();
+          handlePreviewClick(event);
+        }
+      }
+
+      canvas.addEventListener('click', handlePreviewClick);
+      canvas.addEventListener('keydown', handlePreviewKeydown);
     }
 
     function showError(wrapper, message) {
@@ -490,7 +529,13 @@
       const canvas = document.getElementById(mapId);
       if (canvas) {
         canvas.classList.remove('mb-map-canvas--preview');
+        canvas.classList.remove('mb-map-canvas--fallback');
+        canvas.classList.remove('mb-map-canvas--loading');
         canvas.style.backgroundImage = '';
+        canvas.removeAttribute('role');
+        canvas.removeAttribute('tabindex');
+        canvas.removeAttribute('aria-label');
+        canvas.removeAttribute('aria-busy');
         canvas.textContent = message;
       }
     }
