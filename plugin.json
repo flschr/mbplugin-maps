@@ -24,12 +24,12 @@
     },
     {
       "field": "params.map_preview_style",
-      "label": "Geoapify static preview style (optional)",
+      "label": "Geoapify preview style",
       "type": "string"
     },
     {
       "field": "params.map_preview_api_key",
-      "label": "Geoapify static preview API key",
+      "label": "Geoapify API key",
       "type": "string"
     }
   ]
