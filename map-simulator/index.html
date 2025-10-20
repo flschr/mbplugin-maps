@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MB Maps Simulator</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+    }
+
+    header p {
+      max-width: 720px;
+      margin: 0 auto;
+      font-size: 1.05rem;
+      color: rgba(248, 250, 252, 0.8);
+    }
+
+    main {
+      flex: 1;
+      padding: 0 1.5rem 3rem;
+      display: grid;
+      gap: 2.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    form {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.45);
+    }
+
+    form fieldset {
+      margin: 0;
+      padding: 0;
+      border: none;
+      display: grid;
+      gap: 1rem;
+    }
+
+    form label {
+      display: grid;
+      gap: 0.4rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    form input,
+    form textarea,
+    form select {
+      font: inherit;
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.6);
+      color: inherit;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.25);
+    }
+
+    form textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    form button {
+      justify-self: start;
+      padding: 0.75rem 1.75rem;
+      border-radius: 999px;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: #0f172a;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    form button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(99, 102, 241, 0.35);
+    }
+
+    .map-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .map-preview h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.9);
+    }
+
+    .map-preview .mb-map-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      background-color: #eef2f4;
+      max-width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.5);
+    }
+
+    .mb-map-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      font-family: inherit;
+      color: #1b1b1b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .mb-map-canvas--preview {
+      flex-direction: column;
+      gap: 1rem;
+      cursor: pointer;
+    }
+
+    .mb-map-canvas--preview * {
+      cursor: inherit;
+    }
+
+    .mb-map-canvas--fallback {
+      background: repeating-linear-gradient(
+          45deg,
+          rgba(27, 27, 27, 0.08) 0,
+          rgba(27, 27, 27, 0.08) 12px,
+          rgba(27, 27, 27, 0.14) 12px,
+          rgba(27, 27, 27, 0.14) 24px
+        )
+        #eef2f4;
+    }
+
+    .mb-map-preview-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    .mb-map-preview-fallback-text {
+      margin: 0 0 0.75rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1f2937;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .mb-map-preview-controls {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      margin-top: clamp(3.5rem, 24vh, 11rem);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+    }
+
+    .mb-map-canvas--fallback .mb-map-preview-controls {
+      color: #1f2937;
+      text-shadow: none;
+    }
+
+    .mb-map-canvas--fallback .mb-map-preview-controls p {
+      color: inherit;
+    }
+
+    .mb-map-preview-caption {
+      margin: 0;
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: inherit;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+    }
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .mb-map-loading-text {
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: rgba(27, 27, 27, 0.85);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .mb-map-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      text-align: center;
+      font-size: 0.85em;
+      padding: 0.5em 1em;
+      z-index: 5;
+      pointer-events: none;
+      border-radius: 0 0 16px 16px;
+    }
+
+    footer {
+      padding: 1.5rem;
+      text-align: center;
+      color: rgba(148, 163, 184, 0.75);
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MB Maps Shortcode Simulator</h1>
+    <p>Gib dieselben Werte ein, die du für den <code>{{&nbsp;map&nbsp;}}</code>-Shortcode verwenden würdest, und erhalte direkt eine Vorschau. Du kannst die Ausgabe kopieren oder den resultierenden Embed-Code testen, ohne das Plugin in einer Hugo-Seite zu rendern.</p>
+  </header>
+  <main>
+    <form id="map-config">
+      <fieldset>
+        <label>
+          Standort / Koordinaten
+          <input type="text" name="loc" placeholder="z. B. Berlin oder 52.5200, 13.4050" required />
+        </label>
+        <label>
+          Zoom-Level (1–18)
+          <input type="number" name="zoom" min="0" max="21" value="14" />
+        </label>
+        <label>
+          Marker-Text
+          <textarea name="marker" placeholder="Optionale Beschreibung für den Marker"></textarea>
+        </label>
+      </fieldset>
+      <fieldset>
+        <label>
+          Preview Style (Fallback)
+          <input type="text" name="previewStyle" placeholder="z. B. osm-carto" />
+        </label>
+        <label>
+          Preview Style Light
+          <input type="text" name="previewStyleLight" placeholder="Optionaler Light-Style" />
+        </label>
+        <label>
+          Preview Style Dark
+          <input type="text" name="previewStyleDark" placeholder="Optionaler Dark-Style" />
+        </label>
+        <label>
+          Preview API Key
+          <input type="text" name="previewKey" placeholder="Geoapify API Key (optional)" />
+        </label>
+      </fieldset>
+      <button type="submit">Vorschau aktualisieren</button>
+    </form>
+    <section class="map-preview">
+      <h2>Live-Vorschau</h2>
+      <div id="map-preview-container"></div>
+      <details>
+        <summary>Shortcode-Snippet</summary>
+        <pre id="shortcode-output"></pre>
+      </details>
+    </section>
+  </main>
+  <footer>
+    <p>Simulator für das <a href="https://github.com/matthias-burbach/mbplugin-maps" target="_blank" rel="noopener">MB Maps Plugin</a>. Hoste diese Seite z.&nbsp;B. über GitHub Pages.</p>
+  </footer>
+
+  <script>
+    (function() {
+      if (!window.__mbMapEnsureLeaflet) {
+        window.__mbMapPending = [];
+        window.__mbMapEnsureLeaflet = function(callback) {
+          if (window.__mbMapLeafletFailed) {
+            callback();
+            return;
+          }
+          if (window.L && window.L.map) {
+            callback();
+            return;
+          }
+          window.__mbMapPending.push(callback);
+          if (window.__mbMapLeafletLoading) {
+            return;
+          }
+          window.__mbMapLeafletLoading = true;
+          if (!document.querySelector('link[data-mb-map-leaflet="css"]')) {
+            function loadLeafletStylesheet(href, integrity, onFailure) {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = href;
+              if (integrity) {
+                link.integrity = integrity;
+              }
+              link.crossOrigin = 'anonymous';
+              link.dataset.mbMapLeaflet = 'css';
+              link.onload = function() {
+                window.__mbMapLeafletStyleFailed = false;
+              };
+              link.onerror = function() {
+                link.remove();
+                if (typeof onFailure === 'function') {
+                  onFailure();
+                } else {
+                  window.__mbMapLeafletStyleFailed = true;
+                }
+              };
+              document.head.appendChild(link);
+            }
+
+            loadLeafletStylesheet(
+              'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+              'sha512-sA+e2pMvU0N2sfx8bV+RaH59RUW2KIiMzH6I0X58F3RrgPf63eNbUsMUKc7kwh28ykV59C1yH3e1h52mS7P4hQ==',
+              function() {
+                loadLeafletStylesheet('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css');
+              }
+            );
+          }
+          if (!document.querySelector('script[data-mb-map-leaflet="js"]')) {
+            function loadLeafletScript(src, integrity, onFailure) {
+              const script = document.createElement('script');
+              script.src = src;
+              if (integrity) {
+                script.integrity = integrity;
+              }
+              script.crossOrigin = 'anonymous';
+              script.dataset.mbMapLeaflet = 'js';
+              script.onload = function() {
+                window.__mbMapLeafletLoading = false;
+                window.__mbMapLeafletFailed = false;
+                const callbacks = window.__mbMapPending.splice(0);
+                callbacks.forEach(function(fn) { fn(); });
+              };
+              script.onerror = function() {
+                script.remove();
+                if (typeof onFailure === 'function') {
+                  onFailure();
+                } else {
+                  window.__mbMapLeafletLoading = false;
+                  window.__mbMapLeafletFailed = true;
+                  const callbacks = window.__mbMapPending.splice(0);
+                  callbacks.forEach(function(fn) { fn(); });
+                }
+              };
+              document.body.appendChild(script);
+            }
+
+            loadLeafletScript(
+              'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+              'sha512-vJ0wZgfGQm6G3y9kA0RduCMJLZ/HdlIQK5vCk1vZ1tcHTTX3e8DqRLVQjaxAgAnszCQQXTsQJ4nxs1jGME4pKw==',
+              function() {
+                loadLeafletScript('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js');
+              }
+            );
+          }
+        };
+      }
+
+      if (!window.__mbMapInitMaps) {
+        var GEO_CACHE_PREFIX = 'mbMapGeocode:';
+        var GEO_CACHE_MAX_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+        function detectPreferredColorScheme() {
+          var root = document.documentElement || null;
+          var body = document.body || null;
+
+          function inspectElement(element) {
+            if (!element) {
+              return '';
+            }
+
+            var dataset = element.dataset || {};
+            var candidates = [
+              dataset.mbColorScheme,
+              dataset.colorScheme,
+              dataset.scheme,
+              dataset.theme,
+              element.getAttribute ? element.getAttribute('data-color-scheme') : null,
+              element.getAttribute ? element.getAttribute('data-scheme') : null,
+              element.getAttribute ? element.getAttribute('data-theme') : null,
+              typeof element.className === 'string' ? element.className : null
+            ];
+
+            for (var i = 0; i < candidates.length; i += 1) {
+              var value = candidates[i];
+              if (!value || typeof value !== 'string') {
+                continue;
+              }
+              var lower = value.toLowerCase();
+              if (lower.indexOf('dark') !== -1) {
+                return 'dark';
+              }
+              if (lower.indexOf('light') !== -1) {
+                return 'light';
+              }
+            }
+
+            if (element.classList) {
+              if (element.classList.contains('dark')) {
+                return 'dark';
+              }
+              if (element.classList.contains('light')) {
+                return 'light';
+              }
+            }
+
+            return '';
+          }
+
+          var fromRoot = inspectElement(root);
+          if (fromRoot) {
+            return fromRoot;
+          }
+
+          var fromBody = inspectElement(body);
+          if (fromBody) {
+            return fromBody;
+          }
+
+          if (window.matchMedia) {
+            try {
+              if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+              }
+              if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+                return 'light';
+              }
+            } catch (mediaError) {
+              // Ignore media query errors
+            }
+          }
+
+          return 'unknown';
+        }
+
+        function resolvePreviewStyle(wrapper) {
+          if (!wrapper || !wrapper.dataset) {
+            return '';
+          }
+
+          var defaultStyle = (wrapper.dataset.previewStyle || '').trim();
+          var lightStyle = (wrapper.dataset.previewStyleLight || '').trim();
+          var darkStyle = (wrapper.dataset.previewStyleDark || '').trim();
+          var scheme = detectPreferredColorScheme();
+
+          if (scheme === 'dark') {
+            return darkStyle || defaultStyle || lightStyle || '';
+          }
+
+          if (scheme === 'light') {
+            return lightStyle || defaultStyle || darkStyle || '';
+          }
+
+          return defaultStyle || lightStyle || darkStyle || '';
+        }
+
+        function clearStaticPreviewFallback(canvas) {
+          if (!canvas) {
+            return;
+          }
+          canvas.classList.remove('mb-map-canvas--fallback');
+          var fallbackText = canvas.querySelector('.mb-map-preview-fallback-text');
+          if (fallbackText) {
+            fallbackText.remove();
+          }
+        }
+
+        function notifyColorSchemeChange() {
+          var wrappers = document.querySelectorAll('.mb-map-wrapper');
+          wrappers.forEach(function(wrapper) {
+            if (!wrapper || wrapper.dataset.mapLoaded === 'true') {
+              return;
+            }
+            if (typeof wrapper.__mbMapUpdatePreview === 'function') {
+              try {
+                wrapper.__mbMapUpdatePreview();
+              } catch (updateError) {
+                // Ignore preview update errors to avoid breaking other handlers
+              }
+            }
+          });
+        }
+
+        function ensureColorSchemeListeners() {
+          if (window.__mbMapColorSchemeListenersInitialized) {
+            return;
+          }
+          window.__mbMapColorSchemeListenersInitialized = true;
+
+          function handleSchemeChange() {
+            notifyColorSchemeChange();
+          }
+
+          if (window.matchMedia) {
+            try {
+              var mediaDark = window.matchMedia('(prefers-color-scheme: dark)');
+              if (mediaDark) {
+                if (typeof mediaDark.addEventListener === 'function') {
+                  mediaDark.addEventListener('change', handleSchemeChange);
+                } else if (typeof mediaDark.addListener === 'function') {
+                  mediaDark.addListener(handleSchemeChange);
+                }
+              }
+
+              var mediaLight = window.matchMedia('(prefers-color-scheme: light)');
+              if (mediaLight) {
+                if (typeof mediaLight.addEventListener === 'function') {
+                  mediaLight.addEventListener('change', handleSchemeChange);
+                } else if (typeof mediaLight.addListener === 'function') {
+                  mediaLight.addListener(handleSchemeChange);
+                }
+              }
+            } catch (listenerError) {
+              // Ignore media query listener errors
+            }
+          }
+
+          if (window.MutationObserver && document.documentElement) {
+            try {
+              var observer = new MutationObserver(handleSchemeChange);
+              observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-scheme']
+              });
+              window.__mbMapColorSchemeMutationObserver = observer;
+            } catch (observerError) {
+              // Ignore mutation observer errors
+            }
+          }
+
+          if (window.MutationObserver && document.body) {
+            try {
+              var bodyObserver = new MutationObserver(handleSchemeChange);
+              bodyObserver.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-scheme']
+              });
+              window.__mbMapColorSchemeBodyObserver = bodyObserver;
+            } catch (bodyObserverError) {
+              // Ignore mutation observer errors on body
+            }
+          }
+
+          var schemeEvents = ['mb-color-scheme-change', 'themechange', 'color-scheme-change'];
+          schemeEvents.forEach(function(eventName) {
+            try {
+              document.addEventListener(eventName, handleSchemeChange);
+            } catch (docListenerError) {
+              // Ignore addEventListener errors on document
+            }
+            try {
+              window.addEventListener(eventName, handleSchemeChange);
+            } catch (winListenerError) {
+              // Ignore addEventListener errors on window
+            }
+          });
+        }
+
+        function supportsSessionStorage() {
+          if (typeof supportsSessionStorage.cached === 'boolean') {
+            return supportsSessionStorage.cached;
+          }
+          try {
+            var testKey = '__mbMapTest__';
+            window.sessionStorage.setItem(testKey, '1');
+            window.sessionStorage.removeItem(testKey);
+            supportsSessionStorage.cached = true;
+          } catch (error) {
+            supportsSessionStorage.cached = false;
+          }
+          return supportsSessionStorage.cached;
+        }
+
+        function getCachedCoordinates(query) {
+          if (!query || !supportsSessionStorage()) {
+            return null;
+          }
+          var cacheKey = GEO_CACHE_PREFIX + query;
+          try {
+            var raw = window.sessionStorage.getItem(cacheKey);
+            if (!raw) {
+              return null;
+            }
+            var parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') {
+              window.sessionStorage.removeItem(cacheKey);
+              return null;
+            }
+            if (typeof parsed.timestamp !== 'number' || (Date.now() - parsed.timestamp) > GEO_CACHE_MAX_AGE) {
+              window.sessionStorage.removeItem(cacheKey);
+              return null;
+            }
+            if (!isFinite(parsed.lat) || !isFinite(parsed.lng)) {
+              window.sessionStorage.removeItem(cacheKey);
+              return null;
+            }
+            return { lat: parsed.lat, lng: parsed.lng };
+          } catch (error) {
+            try {
+              window.sessionStorage.removeItem(cacheKey);
+            } catch (cleanupError) {
+              // Ignore cleanup errors
+            }
+            return null;
+          }
+        }
+
+        function setCachedCoordinates(query, coords) {
+          if (!query || !supportsSessionStorage()) {
+            return;
+          }
+          if (!coords || !isFinite(coords.lat) || !isFinite(coords.lng)) {
+            return;
+          }
+          var cacheKey = GEO_CACHE_PREFIX + query;
+          try {
+            window.sessionStorage.setItem(cacheKey, JSON.stringify({
+              lat: coords.lat,
+              lng: coords.lng,
+              timestamp: Date.now()
+            }));
+          } catch (error) {
+            try {
+              window.sessionStorage.removeItem(cacheKey);
+            } catch (cleanupError) {
+              // Ignore cleanup errors
+            }
+          }
+        }
+
+        function parseCoordinates(value) {
+          if (!value) {
+            return null;
+          }
+          const parts = value.split(',').map(function(part) {
+            return part.trim();
+          });
+          if (parts.length !== 2) {
+            return null;
+          }
+          const lat = parseFloat(parts[0]);
+          const lng = parseFloat(parts[1]);
+          if (!isFinite(lat) || !isFinite(lng)) {
+            return null;
+          }
+          return { lat: lat, lng: lng };
+        }
+
+        function createStaticPreviewUrl(lat, lng, zoom, style, apiKey) {
+          if (!style || !apiKey) {
+            return '';
+          }
+          var base = 'https://maps.geoapify.com/v1/staticmap';
+          var size = '800x600';
+          var marker = 'lonlat:' + lng + ',' + lat + ';type:material;color:%23ff3333;size:medium';
+          return base + '?style=' + encodeURIComponent(style) +
+            '&width=' + encodeURIComponent(size.split('x')[0]) +
+            '&height=' + encodeURIComponent(size.split('x')[1]) +
+            '&center=lonlat:' + encodeURIComponent(lng + ',' + lat) +
+            '&zoom=' + encodeURIComponent(zoom) +
+            '&marker=' + encodeURIComponent(marker) +
+            '&apiKey=' + encodeURIComponent(apiKey);
+        }
+
+        function updatePreviewImageForWrapper(wrapper, image) {
+          var currentStyle = resolvePreviewStyle(wrapper);
+          if (!currentStyle) {
+            return null;
+          }
+          var lat = parseFloat(wrapper.dataset.previewLat);
+          var lng = parseFloat(wrapper.dataset.previewLng);
+          var zoom = parseInt(wrapper.dataset.zoom, 10);
+          var apiKey = (wrapper.dataset.previewKey || '').trim();
+          if (!isFinite(lat) || !isFinite(lng) || !Number.isFinite(zoom) || zoom < 0) {
+            return null;
+          }
+
+          if (!apiKey) {
+            if (image && image.parentNode) {
+              image.remove();
+            }
+            return null;
+          }
+
+          var src = createStaticPreviewUrl(lat, lng, zoom, currentStyle, apiKey);
+          if (!src) {
+            return null;
+          }
+
+          if (!image) {
+            image = document.createElement('img');
+            image.className = 'mb-map-preview-image';
+          }
+
+          var wrapperStyle = currentStyle;
+          if (wrapper.dataset.activePreviewStyle === wrapperStyle && image.parentNode) {
+            return image;
+          }
+
+          wrapper.dataset.activePreviewStyle = wrapperStyle;
+          image.src = src;
+          image.alt = 'Static map preview for ' + wrapper.dataset.loc;
+          return image;
+        }
+
+        function showPreview(wrapper, lat, lng, zoom, markerText, descriptiveLabel) {
+          const mapId = wrapper.dataset.mapId;
+          const canvas = document.getElementById(mapId);
+          if (!canvas) {
+            return;
+          }
+
+          canvas.textContent = '';
+          canvas.classList.remove('mb-map-canvas--loading');
+          canvas.classList.add('mb-map-canvas--preview');
+          canvas.dataset.previewMode = 'true';
+
+          wrapper.dataset.previewLat = lat;
+          wrapper.dataset.previewLng = lng;
+
+          const controls = document.createElement('div');
+          controls.className = 'mb-map-preview-controls';
+
+          const caption = document.createElement('p');
+          caption.className = 'mb-map-preview-caption';
+          caption.textContent = 'Karte für "' + descriptiveLabel + '" anzeigen';
+          controls.appendChild(caption);
+
+          if (wrapper.dataset.previewKey) {
+            const previewImage = updatePreviewImageForWrapper(wrapper, canvas.querySelector('.mb-map-preview-image'));
+            if (previewImage && !previewImage.parentNode) {
+              canvas.appendChild(previewImage);
+            }
+          } else {
+            const fallbackText = document.createElement('p');
+            fallbackText.className = 'mb-map-preview-fallback-text';
+            fallbackText.textContent = 'Füge einen Geoapify API Key hinzu, um ein Vorschaubild zu laden.';
+            canvas.classList.add('mb-map-canvas--fallback');
+            canvas.appendChild(fallbackText);
+          }
+
+          canvas.appendChild(controls);
+
+          wrapper.__mbMapUpdatePreview = function() {
+            var image = canvas.querySelector('.mb-map-preview-image');
+            var updated = updatePreviewImageForWrapper(wrapper, image);
+            if (updated && !updated.parentNode) {
+              canvas.insertBefore(updated, controls);
+            }
+          };
+          const previewNode = updatePreviewImageForWrapper(wrapper, canvas.querySelector('.mb-map-preview-image'));
+          if (previewNode && !previewNode.parentNode) {
+            canvas.insertBefore(previewNode, controls);
+          }
+          if (!previewNode && canvas.dataset.previewMode === 'true') {
+            delete wrapper.__mbMapUpdatePreview;
+          }
+
+          const markerDescription = markerText ? '. Marker: ' + markerText : '';
+          const accessibleLabel = 'Interaktive Karte für ' + descriptiveLabel + ' laden' + markerDescription;
+          canvas.setAttribute('role', 'button');
+          canvas.setAttribute('tabindex', '0');
+          canvas.setAttribute('aria-label', accessibleLabel);
+
+          function cleanupPreviewInteractions() {
+            canvas.removeEventListener('click', handlePreviewClick);
+            canvas.removeEventListener('keydown', handlePreviewKeydown);
+            canvas.removeAttribute('role');
+            canvas.removeAttribute('tabindex');
+            canvas.removeAttribute('aria-label');
+            canvas.removeAttribute('aria-busy');
+            delete wrapper.dataset.activePreviewStyle;
+            delete wrapper.__mbMapUpdatePreview;
+          }
+
+          function handlePreviewClick(event) {
+            event.preventDefault();
+            if (wrapper.dataset.mapLoaded === 'true' || wrapper.dataset.mapLoading === 'true') {
+              return;
+            }
+            wrapper.dataset.mapLoading = 'true';
+            canvas.setAttribute('aria-busy', 'true');
+            if (!canvas.classList.contains('mb-map-canvas--preview')) {
+              canvas.textContent = '';
+            }
+            const loadingText = document.createElement('div');
+            loadingText.className = 'mb-map-loading-text';
+            loadingText.textContent = 'Karte wird geladen…';
+            canvas.appendChild(loadingText);
+
+            window.__mbMapEnsureLeaflet(function() {
+              canvas.removeAttribute('aria-busy');
+              delete wrapper.dataset.mapLoading;
+              if (!window.L || !window.L.map) {
+                if (loadingText.parentNode) {
+                  loadingText.remove();
+                }
+                showError(wrapper, 'Leaflet konnte nicht geladen werden.');
+                return;
+              }
+              cleanupPreviewInteractions();
+              createMap(wrapper, lat, lng, zoom, markerText);
+              wrapper.dataset.mapLoaded = 'true';
+            });
+          }
+
+          function handlePreviewKeydown(event) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+              event.preventDefault();
+              handlePreviewClick(event);
+            }
+          }
+
+          canvas.addEventListener('click', handlePreviewClick);
+          canvas.addEventListener('keydown', handlePreviewKeydown);
+
+          ensureColorSchemeListeners();
+        }
+
+        function showError(wrapper, message) {
+          const mapId = wrapper.dataset.mapId;
+          const canvas = document.getElementById(mapId);
+          if (canvas) {
+            canvas.classList.remove('mb-map-canvas--preview');
+            canvas.classList.remove('mb-map-canvas--fallback');
+            canvas.classList.remove('mb-map-canvas--loading');
+            canvas.style.backgroundImage = '';
+            canvas.removeAttribute('role');
+            canvas.removeAttribute('tabindex');
+            canvas.removeAttribute('aria-label');
+            canvas.removeAttribute('aria-busy');
+            canvas.textContent = message;
+          }
+        }
+
+        function createMap(wrapper, lat, lng, zoom, markerText) {
+          const mapId = wrapper.dataset.mapId;
+          const canvas = document.getElementById(mapId);
+          if (!canvas) {
+            return;
+          }
+
+          clearStaticPreviewFallback(canvas);
+          canvas.classList.remove('mb-map-canvas--preview');
+          canvas.textContent = '';
+
+          const map = window.L.map(canvas, {
+            scrollWheelZoom: false,
+            keyboard: true,
+            dragging: true
+          }).setView([lat, lng], zoom);
+
+          const tiles = window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          });
+          tiles.addTo(map);
+
+          if (markerText) {
+            const marker = window.L.marker([lat, lng]);
+            marker.addTo(map);
+            marker.bindPopup(markerText);
+          } else {
+            window.L.marker([lat, lng]).addTo(map);
+          }
+
+          wrapper.__mbMapLeafletInstance = map;
+        }
+
+        window.__mbMapInitMaps = function() {
+          const wrappers = document.querySelectorAll('.mb-map-wrapper');
+          wrappers.forEach(function(wrapper) {
+            if (wrapper.dataset.initialized === 'true') {
+              return;
+            }
+
+            wrapper.dataset.initialized = 'true';
+            const zoomValue = parseInt(wrapper.dataset.zoom, 10);
+            const zoom = Number.isFinite(zoomValue) ? zoomValue : 14;
+            const locationValue = wrapper.dataset.loc;
+            const markerText = wrapper.dataset.marker ? wrapper.dataset.marker.trim() : '';
+            const normalizedLocation = locationValue ? locationValue.trim().toLowerCase() : '';
+            const coords = parseCoordinates(locationValue);
+
+            if (coords) {
+              showPreview(wrapper, coords.lat, coords.lng, zoom, markerText, locationValue);
+              return;
+            }
+
+            const mapId = wrapper.dataset.mapId;
+            const canvas = document.getElementById(mapId);
+            if (canvas) {
+              canvas.textContent = 'Standortsuche…';
+            }
+
+            const cached = normalizedLocation ? getCachedCoordinates(normalizedLocation) : null;
+            if (cached) {
+              showPreview(wrapper, cached.lat, cached.lng, zoom, markerText, locationValue);
+              return;
+            }
+
+            const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(locationValue);
+            fetch(url, {
+              headers: {
+                'Accept-Language': (navigator.language || 'en')
+              },
+              referrerPolicy: 'no-referrer-when-downgrade'
+            })
+              .then(function(response) {
+                if (!response.ok) {
+                  throw new Error('Geocoding request failed');
+                }
+                return response.json();
+              })
+              .then(function(result) {
+                if (!Array.isArray(result) || result.length === 0) {
+                  throw new Error('Kein Ergebnis für "' + locationValue + '" gefunden.');
+                }
+                const item = result[0];
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lon);
+                if (!isFinite(lat) || !isFinite(lng)) {
+                  throw new Error('Ungültige Koordinaten erhalten.');
+                }
+                if (normalizedLocation) {
+                  setCachedCoordinates(normalizedLocation, { lat: lat, lng: lng });
+                }
+                showPreview(wrapper, lat, lng, zoom, markerText, locationValue);
+              })
+              .catch(function(error) {
+                showError(wrapper, error.message || 'Standort konnte nicht geladen werden.');
+              });
+          });
+        };
+      }
+    })();
+  </script>
+  <script>
+    (function() {
+      const form = document.getElementById('map-config');
+      const container = document.getElementById('map-preview-container');
+      const shortcodeOutput = document.getElementById('shortcode-output');
+
+      function createWrapper(values) {
+        container.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mb-map-wrapper';
+        wrapper.dataset.mbMap = 'true';
+        const mapId = 'mb-map-' + Date.now();
+        wrapper.dataset.mapId = mapId;
+        wrapper.dataset.loc = values.loc || '';
+        wrapper.dataset.zoom = values.zoom || '14';
+        wrapper.dataset.marker = values.marker || '';
+        wrapper.dataset.previewStyle = values.previewStyle || '';
+        wrapper.dataset.previewStyleLight = values.previewStyleLight || '';
+        wrapper.dataset.previewStyleDark = values.previewStyleDark || '';
+        wrapper.dataset.previewKey = values.previewKey || '';
+
+        const canvas = document.createElement('div');
+        canvas.id = mapId;
+        canvas.className = 'mb-map-canvas';
+        canvas.textContent = 'Gib einen Standort an und klicke auf "Vorschau aktualisieren".';
+        wrapper.appendChild(canvas);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'mb-map-overlay';
+        overlay.textContent = 'Kartendaten © OpenStreetMap-Mitwirkende.';
+        wrapper.appendChild(overlay);
+
+        container.appendChild(wrapper);
+        return wrapper;
+      }
+
+      function updateShortcode(values) {
+        const parts = ['{{< map'];
+        if (values.loc) {
+          parts.push('loc="' + values.loc.replace(/"/g, '\\"') + '"');
+        }
+        if (values.zoom) {
+          parts.push('zoom="' + values.zoom + '"');
+        }
+        if (values.marker) {
+          parts.push('marker="' + values.marker.replace(/"/g, '\\"') + '"');
+        }
+        parts.push('>}}');
+        shortcodeOutput.textContent = parts.join(' ');
+      }
+
+      function serializeForm(form) {
+        const data = new FormData(form);
+        const values = {
+          loc: (data.get('loc') || '').trim(),
+          zoom: (data.get('zoom') || '').trim() || '14',
+          marker: (data.get('marker') || '').trim(),
+          previewStyle: (data.get('previewStyle') || '').trim(),
+          previewStyleLight: (data.get('previewStyleLight') || '').trim(),
+          previewStyleDark: (data.get('previewStyleDark') || '').trim(),
+          previewKey: (data.get('previewKey') || '').trim()
+        };
+        return values;
+      }
+
+      function refresh(values) {
+        const wrapper = createWrapper(values);
+        updateShortcode(values);
+        setTimeout(function() {
+          delete wrapper.dataset.initialized;
+          window.__mbMapInitMaps();
+        }, 0);
+      }
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const values = serializeForm(form);
+        refresh(values);
+      });
+
+      refresh({
+        loc: 'Berlin, Germany',
+        zoom: '12',
+        marker: 'Brandenburger Tor',
+        previewStyle: '',
+        previewStyleLight: '',
+        previewStyleDark: '',
+        previewKey: ''
+      });
+    })();
+  </script>
+</body>
+</html>

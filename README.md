@@ -38,6 +38,13 @@ The zoom setting in the shortcode overrides the default value defined in the plu
 
 You can see the plugin in action here: [Example Post](https://fischr.org/2017/09/03/oben-links-am-lago-di/)
 
+### Try your settings in a browser
+
+The repository ships with a standalone simulator in [`map-simulator/index.html`](map-simulator/index.html). Open the file in a
+browser (or host it via GitHub Pages) and enter the same `loc`, `zoom`, `marker` and preview-style values that you would pass to
+the shortcode. The page renders the static preview and lets you load the interactive map so you can verify the final embed
+before publishing.
+
 ## Configuration
 
 You can configure the following options via your Micro.blog plugin settings:
