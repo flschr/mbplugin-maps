@@ -22,6 +22,16 @@ Add the following shortcode to a blog post to embed a map:
 
 The `loc` parameter accepts either coordinates (e.g. `48.1351,11.5820`) or address strings (e.g. `Marienplatz, München`). If the `zoom` parameter is not set, the default zoom level defined in the plugin settings will be used. Address lookups are performed via [Nominatim](https://nominatim.openstreetmap.org/). Optionally, provide a `marker` value to show a popup when the marker is clicked.
 
+### Choosing a zoom level
+
+Leaflet interprets zoom levels from 0 (whole world) up to 19 (street/building level). Values outside this range are clamped to the nearest supported level before both the static preview and the interactive map are rendered.
+
+- City or region views usually work well between levels 10–13.
+- Neighbourhood or town centres are often clearest around 14–16 (the plugin’s default is 14 if nothing else is configured).
+- For very small areas—such as a single building—use 17–19.
+
+The zoom setting in the shortcode overrides the default value defined in the plugin settings for that specific embed.
+
 ### Preview of the embed
 
 <img src="preview.webp" alt="Embedded OSM in a Micro.blog posting">
@@ -39,6 +49,8 @@ You can configure the following options via your Micro.blog plugin settings:
 - Provide the Geoapify API key that is required for static previews.
 
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
+
+The general “Geoapify preview style” acts as the fallback used for both light and dark previews. If you additionally enter identifiers in the dedicated light/dark fields, the plugin will switch to those styles whenever the visitor’s color scheme changes. When a mode-specific value is missing, the fallback style is used automatically.
 
 You can optionally set dedicated Geoapify style identifiers for light and dark mode. The plugin will automatically switch the static preview to the matching style when the site’s color scheme changes, falling back to the general style if a mode-specific value is not configured.
 
