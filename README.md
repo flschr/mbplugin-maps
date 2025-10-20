@@ -35,10 +35,12 @@ You can configure the following options via your Micro.blog plugin settings:
 - Show or hide the overlay message.
 - Customize the privacy notice text displayed on the overlay.
 - Set the default zoom level (used if no zoom value is set in the shortcode).
-- Provide an optional static preview style (Geoapify theme).
+- Provide optional static preview styles (Geoapify themes) for light and dark mode.
 - Provide the Geoapify API key that is required for static previews.
 
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
+
+You can optionally set dedicated Geoapify style identifiers for light and dark mode. The plugin will automatically switch the static preview to the matching style when the site’s color scheme changes, falling back to the general style if a mode-specific value is not configured.
 
 ### Migrating from Google Maps to OpenStreetMap
 
@@ -63,6 +65,9 @@ Because the plugin talks directly to OpenStreetMap and Nominatim servers, please
 René Fischer – [https://fischr.org](https://fischr.org)
 
 ## Changelog
+
+### 4.1.0
+- Add optional Geoapify preview styles that automatically switch between light and dark mode based on the active site color scheme.
 
 ### 4.0.2
 - Load the interactive map when the static preview is clicked anywhere, removing the dedicated button, and restore the marker visibility once the map is active.

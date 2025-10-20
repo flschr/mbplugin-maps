@@ -6,6 +6,8 @@
 {{ $marker := .Get "marker" | default "" }}
 {{ $id := printf "mb-map-%d" (now.UnixNano) }}
 {{ $previewStyle := .Site.Params.map_preview_style | default "" }}
+{{ $previewStyleLight := .Site.Params.map_preview_style_light | default "" }}
+{{ $previewStyleDark := .Site.Params.map_preview_style_dark | default "" }}
 {{ $previewApiKey := .Site.Params.map_preview_api_key | default "" }}
 {{ if not (.Page.Scratch.Get "mb-map-style-loaded") }}
 {{ .Page.Scratch.Set "mb-map-style-loaded" true }}
@@ -131,7 +133,7 @@
 }
 </style>
 {{ end }}
-<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
+<div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-style-light="{{ $previewStyleLight | htmlEscape }}" data-preview-style-dark="{{ $previewStyleDark | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
     {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
@@ -240,6 +242,202 @@
   if (!window.__mbMapInitMaps) {
     var GEO_CACHE_PREFIX = 'mbMapGeocode:';
     var GEO_CACHE_MAX_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+    function detectPreferredColorScheme() {
+      var root = document.documentElement || null;
+      var body = document.body || null;
+
+      function inspectElement(element) {
+        if (!element) {
+          return '';
+        }
+
+        var dataset = element.dataset || {};
+        var candidates = [
+          dataset.mbColorScheme,
+          dataset.colorScheme,
+          dataset.scheme,
+          dataset.theme,
+          element.getAttribute ? element.getAttribute('data-color-scheme') : null,
+          element.getAttribute ? element.getAttribute('data-scheme') : null,
+          element.getAttribute ? element.getAttribute('data-theme') : null,
+          typeof element.className === 'string' ? element.className : null
+        ];
+
+        for (var i = 0; i < candidates.length; i += 1) {
+          var value = candidates[i];
+          if (!value || typeof value !== 'string') {
+            continue;
+          }
+          var lower = value.toLowerCase();
+          if (lower.indexOf('dark') !== -1) {
+            return 'dark';
+          }
+          if (lower.indexOf('light') !== -1) {
+            return 'light';
+          }
+        }
+
+        if (element.classList) {
+          if (element.classList.contains('dark')) {
+            return 'dark';
+          }
+          if (element.classList.contains('light')) {
+            return 'light';
+          }
+        }
+
+        return '';
+      }
+
+      var fromRoot = inspectElement(root);
+      if (fromRoot) {
+        return fromRoot;
+      }
+
+      var fromBody = inspectElement(body);
+      if (fromBody) {
+        return fromBody;
+      }
+
+      if (window.matchMedia) {
+        try {
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+          }
+          if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+          }
+        } catch (mediaError) {
+          // Ignore media query errors
+        }
+      }
+
+      return 'unknown';
+    }
+
+    function resolvePreviewStyle(wrapper) {
+      if (!wrapper || !wrapper.dataset) {
+        return '';
+      }
+
+      var defaultStyle = (wrapper.dataset.previewStyle || '').trim();
+      var lightStyle = (wrapper.dataset.previewStyleLight || '').trim();
+      var darkStyle = (wrapper.dataset.previewStyleDark || '').trim();
+      var scheme = detectPreferredColorScheme();
+
+      if (scheme === 'dark') {
+        return darkStyle || defaultStyle || lightStyle || '';
+      }
+
+      if (scheme === 'light') {
+        return lightStyle || defaultStyle || darkStyle || '';
+      }
+
+      return defaultStyle || lightStyle || darkStyle || '';
+    }
+
+    function clearStaticPreviewFallback(canvas) {
+      if (!canvas) {
+        return;
+      }
+      canvas.classList.remove('mb-map-canvas--fallback');
+      var fallbackText = canvas.querySelector('.mb-map-preview-fallback-text');
+      if (fallbackText) {
+        fallbackText.remove();
+      }
+    }
+
+    function notifyColorSchemeChange() {
+      var wrappers = document.querySelectorAll('.mb-map-wrapper');
+      wrappers.forEach(function(wrapper) {
+        if (!wrapper || wrapper.dataset.mapLoaded === 'true') {
+          return;
+        }
+        if (typeof wrapper.__mbMapUpdatePreview === 'function') {
+          try {
+            wrapper.__mbMapUpdatePreview();
+          } catch (updateError) {
+            // Ignore preview update errors to avoid breaking other handlers
+          }
+        }
+      });
+    }
+
+    function ensureColorSchemeListeners() {
+      if (window.__mbMapColorSchemeListenersInitialized) {
+        return;
+      }
+      window.__mbMapColorSchemeListenersInitialized = true;
+
+      function handleSchemeChange() {
+        notifyColorSchemeChange();
+      }
+
+      if (window.matchMedia) {
+        try {
+          var mediaDark = window.matchMedia('(prefers-color-scheme: dark)');
+          if (mediaDark) {
+            if (typeof mediaDark.addEventListener === 'function') {
+              mediaDark.addEventListener('change', handleSchemeChange);
+            } else if (typeof mediaDark.addListener === 'function') {
+              mediaDark.addListener(handleSchemeChange);
+            }
+          }
+
+          var mediaLight = window.matchMedia('(prefers-color-scheme: light)');
+          if (mediaLight) {
+            if (typeof mediaLight.addEventListener === 'function') {
+              mediaLight.addEventListener('change', handleSchemeChange);
+            } else if (typeof mediaLight.addListener === 'function') {
+              mediaLight.addListener(handleSchemeChange);
+            }
+          }
+        } catch (listenerError) {
+          // Ignore media query listener errors
+        }
+      }
+
+      if (window.MutationObserver && document.documentElement) {
+        try {
+          var observer = new MutationObserver(handleSchemeChange);
+          observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-scheme']
+          });
+          window.__mbMapColorSchemeMutationObserver = observer;
+        } catch (observerError) {
+          // Ignore mutation observer errors
+        }
+      }
+
+      if (window.MutationObserver && document.body) {
+        try {
+          var bodyObserver = new MutationObserver(handleSchemeChange);
+          bodyObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class', 'data-theme', 'data-color-scheme', 'data-scheme']
+          });
+          window.__mbMapColorSchemeBodyObserver = bodyObserver;
+        } catch (bodyObserverError) {
+          // Ignore mutation observer errors on body
+        }
+      }
+
+      var schemeEvents = ['mb-color-scheme-change', 'themechange', 'color-scheme-change'];
+      schemeEvents.forEach(function(eventName) {
+        try {
+          document.addEventListener(eventName, handleSchemeChange);
+        } catch (docListenerError) {
+          // Ignore addEventListener errors on document
+        }
+        try {
+          window.addEventListener(eventName, handleSchemeChange);
+        } catch (winListenerError) {
+          // Ignore addEventListener errors on window
+        }
+      });
+    }
 
     function supportsSessionStorage() {
       if (typeof supportsSessionStorage.cached === 'boolean') {
@@ -389,8 +587,16 @@
     }
 
     function buildStaticMapUrl(wrapper, lat, lng, zoom) {
-      const style = wrapper.dataset.previewStyle || '';
-      const apiKey = wrapper.dataset.previewKey || '';
+      if (!wrapper || !wrapper.dataset) {
+        return null;
+      }
+      const apiKey = (wrapper.dataset.previewKey || '').trim();
+      const style = resolvePreviewStyle(wrapper);
+      if (style) {
+        wrapper.dataset.activePreviewStyle = style;
+      } else {
+        delete wrapper.dataset.activePreviewStyle;
+      }
       return buildGeoapifyStaticMapUrl(style, apiKey, lat, lng, zoom);
     }
 
@@ -415,11 +621,6 @@
       canvas.classList.add('mb-map-canvas--preview');
       canvas.classList.remove('mb-map-canvas--fallback');
 
-      const existingImage = canvas.querySelector('img.mb-map-preview-image');
-      if (existingImage) {
-        existingImage.remove();
-      }
-
       const descriptiveLabel = locationLabel && locationLabel.trim() ? locationLabel.trim() : 'map location';
       const trimmedMarkerText = typeof markerText === 'string' ? markerText.trim() : '';
       const previewKey = (wrapper.dataset.previewKey || '').trim();
@@ -428,7 +629,6 @@
         return;
       }
 
-      const staticMapUrl = buildStaticMapUrl(wrapper, lat, lng, zoom);
       const img = document.createElement('img');
       img.className = 'mb-map-preview-image';
       img.decoding = 'async';
@@ -436,22 +636,12 @@
       img.referrerPolicy = 'no-referrer';
       img.alt = 'Static map preview for ' + descriptiveLabel + '.';
 
-      if (staticMapUrl) {
-        img.src = staticMapUrl;
-      }
-
-      if (staticMapUrl) {
-        canvas.appendChild(img);
-      }
-
-      if (staticMapUrl) {
-        img.addEventListener('error', function handlePreviewError() {
-          img.remove();
-          showStaticPreviewUnavailable(canvas);
-        });
-      } else {
+      function handlePreviewError() {
+        img.remove();
         showStaticPreviewUnavailable(canvas);
       }
+
+      img.addEventListener('error', handlePreviewError);
 
       const controls = document.createElement('div');
       controls.className = 'mb-map-preview-controls';
@@ -461,6 +651,34 @@
         caption.className = 'mb-map-preview-caption';
         caption.textContent = trimmedMarkerText;
         controls.appendChild(caption);
+      }
+
+      function updatePreviewImage() {
+        const staticMapUrl = buildStaticMapUrl(wrapper, lat, lng, zoom);
+        if (!staticMapUrl) {
+          if (img.parentNode) {
+            img.remove();
+          }
+          showStaticPreviewUnavailable(canvas);
+          return false;
+        }
+        clearStaticPreviewFallback(canvas);
+        if (img.parentNode !== canvas) {
+          canvas.insertBefore(img, canvas.firstChild || null);
+        }
+        if (img.dataset.mbMapUrl !== staticMapUrl) {
+          img.dataset.mbMapUrl = staticMapUrl;
+          img.src = staticMapUrl;
+        }
+        img.dataset.mbMapStyle = wrapper.dataset.activePreviewStyle || '';
+        return true;
+      }
+
+      wrapper.__mbMapUpdatePreview = updatePreviewImage;
+      const previewAvailable = updatePreviewImage();
+      if (!previewAvailable) {
+        delete wrapper.__mbMapUpdatePreview;
+        return;
       }
 
       if (controls.childElementCount > 0) {
@@ -480,6 +698,8 @@
         canvas.removeAttribute('tabindex');
         canvas.removeAttribute('aria-label');
         canvas.removeAttribute('aria-busy');
+        delete wrapper.dataset.activePreviewStyle;
+        delete wrapper.__mbMapUpdatePreview;
       }
 
       function handlePreviewClick(event) {
@@ -522,6 +742,8 @@
 
       canvas.addEventListener('click', handlePreviewClick);
       canvas.addEventListener('keydown', handlePreviewKeydown);
+
+      ensureColorSchemeListeners();
     }
 
     function showError(wrapper, message) {
