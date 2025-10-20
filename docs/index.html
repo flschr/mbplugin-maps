@@ -214,6 +214,18 @@
         color: #b45309;
       }
 
+      .styles-note {
+        margin: 0;
+        grid-column: 1 / -1;
+        font-size: 0.82rem;
+        color: #475569;
+      }
+
+      .styles-note a {
+        color: #2563eb;
+        font-weight: 600;
+      }
+
       .preview-card {
         display: flex;
         flex-direction: column;
@@ -330,13 +342,14 @@
                 <input type="number" name="zoom" min="1" max="18" value="12" />
               </label>
               <label class="has-hint">
-                Geoapify API key (optional)
+                Geoapify API key (required)
                 <input
                   type="text"
                   name="tile-key"
                   id="tile-key"
                   autocomplete="off"
-                  placeholder="Paste your Geoapify key to load live styles"
+                  placeholder="Paste your required Geoapify key to load live styles"
+                  required
                 />
                 <p class="field-hint" id="geoapify-hint"></p>
               </label>
@@ -373,6 +386,11 @@
               <div class="map-frame" id="map-b"></div>
             </div>
           </div>
+          <p class="styles-note">
+            Need a reference? Browse the official
+            <a href="https://apidocs.geoapify.com/docs/icon/learn-more/" target="_blank" rel="noopener">Geoapify map style catalog</a>
+            to see thumbnails for every style identifier.
+          </p>
         </div>
       </main>
     </div>
@@ -385,15 +403,24 @@
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const geoapifyStyles = [
+          { value: 'osm-carto', label: 'Geoapify · OSM Carto' },
           { value: 'osm-bright', label: 'Geoapify · OSM Bright' },
-          { value: 'osm-dark', label: 'Geoapify · OSM Dark' },
+          { value: 'osm-bright-grey', label: 'Geoapify · OSM Bright Grey' },
+          { value: 'osm-bright-smooth', label: 'Geoapify · OSM Bright Smooth' },
+          { value: 'klokantech-basic', label: 'Geoapify · Klokantech Basic' },
           { value: 'osm-liberty', label: 'Geoapify · OSM Liberty' },
-          { value: 'voyager', label: 'Geoapify · Voyager' },
+          { value: 'maptiler-3d', label: 'Geoapify · MapTiler 3D' },
+          { value: 'toner', label: 'Geoapify · Toner' },
+          { value: 'toner-grey', label: 'Geoapify · Toner Grey' },
           { value: 'positron', label: 'Geoapify · Positron' },
+          { value: 'positron-blue', label: 'Geoapify · Positron Blue' },
+          { value: 'positron-red', label: 'Geoapify · Positron Red' },
           { value: 'dark-matter', label: 'Geoapify · Dark Matter' },
-          { value: 'navigation-day', label: 'Geoapify · Navigation Day' },
-          { value: 'navigation-night', label: 'Geoapify · Navigation Night' },
-          { value: 'minimal', label: 'Geoapify · Minimal' }
+          { value: 'dark-matter-brown', label: 'Geoapify · Dark Matter Brown' },
+          { value: 'dark-matter-dark-grey', label: 'Geoapify · Dark Matter Dark Grey' },
+          { value: 'dark-matter-dark-purple', label: 'Geoapify · Dark Matter Dark Purple' },
+          { value: 'dark-matter-purple-roads', label: 'Geoapify · Dark Matter Purple Roads' },
+          { value: 'dark-matter-yellow-roads', label: 'Geoapify · Dark Matter Yellow Roads' }
         ];
 
         const fallbackTiles = {
@@ -469,7 +496,7 @@
           });
           if (needsKey) {
             geoapifyHint.textContent =
-              'Enter your Geoapify API key above to load live tiles. Showing OpenStreetMap tiles as a fallback.';
+              'A Geoapify API key is required to load these map styles. Enter your key above to replace the OpenStreetMap fallback tiles.';
           } else {
             geoapifyHint.textContent = '';
           }
@@ -485,7 +512,7 @@
           select.value = defaultValue;
         }
 
-        populateSelect(styleSelectA, 'osm-bright');
+        populateSelect(styleSelectA, 'osm-carto');
         populateSelect(styleSelectB, 'dark-matter');
 
         function createPreview(select, containerId) {

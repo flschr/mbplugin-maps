@@ -66,9 +66,11 @@ Version 4 introduces a new privacy-friendly architecture that replaces Google Ma
 1. Visit the [Geoapify page](https://www.geoapify.com/) and create a free account. The Free plan currently includes **3000 map tile requests and 3000 static map
    requests per day**, which is more than enough for most Micro.blog sites.
 2. After signing up, navigate to your Geoapify dashboard and create an API key.
-3. Copy the generated key into the plugin settings field labelled “Geoapify API key”.
+3. Copy the generated key into the plugin settings field labelled “Geoapify API key”. Static previews will not load without a valid key.
 4. Optionally choose one of Geoapify’s static map themes and enter its identifier in the
-   “Static preview style” field (leave blank to keep the default style).
+   “Static preview style” field (leave blank to keep the default style). Refer to the
+   [Geoapify map style catalog](https://apidocs.geoapify.com/docs/icon/learn-more/) for the currently supported identifiers such as
+   `osm-carto`, `klokantech-basic`, `maptiler-3d`, or `dark-matter-yellow-roads`.
 
 > [!NOTE]
 > Your existing posts and shortcodes do not need to change—the plugin will automatically use the new OpenStreetMap-based renderer once the Geoapify key has been added.
