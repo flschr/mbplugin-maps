@@ -2,7 +2,7 @@
 
 <img src="logo.png" alt="Map embeds for Micro.blog" width="200">
 
-This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap, and Geoapify to generate preview static preview images of the embedded map, and after a click on the map, loads an embedded OSM map. An optional privacy notice overlay can be shown on the static preview image.
+This plugin provides a privacy-friendly shortcode for embedding interactive maps into Micro.blog posts. It uses Leaflet together with OpenStreetMap, and Geoapify to generate static preview images of the embedded map. After clicking the static preview, the interactive OSM map is loaded. An optional privacy notice overlay can be shown on the static preview image.
 
 ## Usage
 
@@ -31,7 +31,6 @@ You can configure the following options via your Micro.blog plugin settings:
 - Set the default zoom level (used if no zoom value is set in the shortcode).
 - Provide an optional static preview style (Geoapify theme).
 - Provide the Geoapify API key that is required for static previews.
-- Customize the text shown on the “Show interactive map” button.
 
 Static previews are now powered exclusively by [Geoapify](https://www.geoapify.com/). Configure your desired map theme and provide a valid Geoapify API key to ensure the preview image can be loaded successfully.
 
@@ -58,6 +57,9 @@ Because the plugin talks directly to OpenStreetMap and Nominatim servers, please
 René Fischer – [https://fischr.org](https://fischr.org)
 
 ## Changelog
+
+### 4.0.2
+- Load the interactive map when the static preview is clicked anywhere, removing the dedicated button, and restore the marker visibility once the map is active.
 
 ### 4.0.1
 - Allow customizing the load button text via the plugin settings and position it below the preview pin.

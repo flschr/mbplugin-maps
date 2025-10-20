@@ -3,7 +3,7 @@
   "title": "Privacy-Friendly Maps",
   "description": "Embed interactive maps powered by OpenStreetMap easily.",
   "author": "René Fischer",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "fields": [
     {
       "field": "params.show_privacy_notice",
@@ -31,12 +31,6 @@
       "field": "params.map_preview_api_key",
       "label": "Geoapify static preview API key",
       "type": "string"
-    },
-    {
-      "field": "params.map_load_button_text",
-      "label": "Load map button text",
-      "type": "string",
-      "default": "Show interactive map"
     }
   ]
 }
