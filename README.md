@@ -82,6 +82,11 @@ René Fischer – [https://fischr.org](https://fischr.org)
 
 ## Changelog
 
+### 4.2.0
+- Generate Geoapify preview images based on the rendered map size to keep images sharp on large screens and lighter on small viewports.
+- Replace the legacy Google Maps privacy text setting with a dedicated `map_privacy_notice_text` field.
+- Identify Nominatim requests with the plugin’s user agent, contact URL, and a courteous request backoff for improved compliance.
+
 ### 4.1.0
 - Add optional Geoapify preview styles that automatically switch between light and dark mode based on the active site color scheme.
 
