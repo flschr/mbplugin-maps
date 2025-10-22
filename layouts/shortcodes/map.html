@@ -136,7 +136,7 @@
 <div class="mb-map-wrapper" data-mb-map="true" data-map-id="{{ $id }}" data-loc="{{ $loc | htmlEscape }}" data-zoom="{{ $zoom }}" data-marker="{{ $marker | htmlEscape }}" data-preview-style="{{ $previewStyle | htmlEscape }}" data-preview-style-light="{{ $previewStyleLight | htmlEscape }}" data-preview-style-dark="{{ $previewStyleDark | htmlEscape }}" data-preview-key="{{ $previewApiKey | htmlEscape }}">
   <div id="{{ $id }}" class="mb-map-canvas">Loading map…</div>
   {{ if .Site.Params.show_privacy_notice }}
-    {{ $privacyText := or .Site.Params.map_privacy_notice_text .Site.Params.googlemaps_privacy_notice_text }}
+    {{ $privacyText := .Site.Params.map_privacy_notice_text }}
     <div class="mb-map-overlay">
       {{ with $privacyText }}
         {{ . }}
@@ -242,6 +242,12 @@
   if (!window.__mbMapInitMaps) {
     var GEO_CACHE_PREFIX = 'mbMapGeocode:';
     var GEO_CACHE_MAX_AGE = 14 * 24 * 60 * 60 * 1000; // 14 days
+    var NOMINATIM_ENDPOINT = 'https://nominatim.openstreetmap.org/search';
+    var NOMINATIM_DEFAULT_PARAMS = 'format=jsonv2&limit=1';
+    var NOMINATIM_USER_AGENT = 'mbplugin-map/4.2 (+https://github.com/zerok/mbplugin-maps)';
+    var NOMINATIM_CONTACT = 'https://github.com/zerok/mbplugin-maps';
+    var NOMINATIM_BACKOFF_MS = 1100;
+    var lastNominatimRequestTime = 0;
 
     function detectPreferredColorScheme() {
       var root = document.documentElement || null;
@@ -437,6 +443,107 @@
           // Ignore addEventListener errors on window
         }
       });
+
+      try {
+        var resizeDebounce = null;
+        window.addEventListener('resize', function() {
+          if (resizeDebounce) {
+            clearTimeout(resizeDebounce);
+          }
+          resizeDebounce = setTimeout(function() {
+            resizeDebounce = null;
+            notifyColorSchemeChange();
+          }, 150);
+        }, { passive: true });
+      } catch (resizeListenerError) {
+        // Ignore resize listener errors
+      }
+    }
+
+    function buildNominatimUrl(query) {
+      var contactParam = NOMINATIM_CONTACT ? '&email=' + encodeURIComponent(NOMINATIM_CONTACT) : '';
+      var userAgentParam = NOMINATIM_USER_AGENT ? '&useragent=' + encodeURIComponent(NOMINATIM_USER_AGENT) : '';
+      return (
+        NOMINATIM_ENDPOINT +
+        '?' +
+        NOMINATIM_DEFAULT_PARAMS +
+        '&q=' + encodeURIComponent(query || '') +
+        contactParam +
+        userAgentParam
+      );
+    }
+
+    function createNominatimHeaders() {
+      var acceptLanguage = (typeof navigator !== 'undefined' && navigator && navigator.language) ? navigator.language : 'en';
+      if (typeof Headers === 'function') {
+        try {
+          var headerMap = new Headers();
+          headerMap.set('Accept-Language', acceptLanguage);
+          if (NOMINATIM_CONTACT) {
+            headerMap.set('X-Contact-Info', NOMINATIM_CONTACT);
+          }
+          if (NOMINATIM_USER_AGENT) {
+            try {
+              headerMap.set('User-Agent', NOMINATIM_USER_AGENT);
+            } catch (forbiddenHeaderError) {
+              headerMap.set('X-User-Agent', NOMINATIM_USER_AGENT);
+            }
+          }
+          return headerMap;
+        } catch (headerError) {
+          // Fallback to simple object below
+        }
+      }
+
+      var fallbackHeaders = { 'Accept-Language': acceptLanguage };
+      if (NOMINATIM_CONTACT) {
+        fallbackHeaders['X-Contact-Info'] = NOMINATIM_CONTACT;
+      }
+      if (NOMINATIM_USER_AGENT) {
+        fallbackHeaders['X-User-Agent'] = NOMINATIM_USER_AGENT;
+      }
+      return fallbackHeaders;
+    }
+
+    function buildNominatimRequestOptions() {
+      var options = {
+        method: 'GET',
+        headers: createNominatimHeaders(),
+        credentials: 'omit',
+        cache: 'no-store'
+      };
+
+      try {
+        options.referrerPolicy = 'no-referrer';
+      } catch (policyError) {
+        // Older browsers might not support setting referrerPolicy
+      }
+
+      return options;
+    }
+
+    function queueNominatimRequest(url, options) {
+      var now = Date.now ? Date.now() : new Date().getTime();
+      var waitTime = 0;
+      if (lastNominatimRequestTime) {
+        var elapsed = now - lastNominatimRequestTime;
+        if (elapsed < NOMINATIM_BACKOFF_MS) {
+          waitTime = NOMINATIM_BACKOFF_MS - elapsed;
+        }
+      }
+
+      function performFetch() {
+        lastNominatimRequestTime = Date.now ? Date.now() : new Date().getTime();
+        return fetch(url, options);
+      }
+
+      if (waitTime <= 0) {
+        return performFetch();
+      }
+
+      return new Promise(function(resolve) {
+        setTimeout(resolve, waitTime);
+      }).then(performFetch);
     }
 
     function supportsSessionStorage() {
@@ -563,12 +670,12 @@
       return Math.max(0, Math.min(zoom, 19));
     }
 
-    function buildGeoapifyStaticMapUrl(style, apiKey, lat, lng, zoom) {
+    function buildGeoapifyStaticMapUrl(style, apiKey, lat, lng, zoom, dimensions) {
       const clampedZoom = clampZoom(zoom);
       const formattedLat = lat.toFixed(6);
       const formattedLng = lng.toFixed(6);
-      const width = 600;
-      const height = 338;
+      const width = Math.max(1, Math.round(dimensions && dimensions.width ? dimensions.width : 600));
+      const height = Math.max(1, Math.round(dimensions && dimensions.height ? dimensions.height : 338));
       const normalizedStyle = (style || '').toString().trim();
       const normalizedKey = (apiKey || '').toString().trim();
 
@@ -586,7 +693,7 @@
         ';type:awesome;color:' + markerColor + ';size:medium&apiKey=' + encodeURIComponent(normalizedKey);
     }
 
-    function buildStaticMapUrl(wrapper, lat, lng, zoom) {
+    function buildStaticMapUrl(wrapper, lat, lng, zoom, dimensions) {
       if (!wrapper || !wrapper.dataset) {
         return null;
       }
@@ -597,7 +704,7 @@
       } else {
         delete wrapper.dataset.activePreviewStyle;
       }
-      return buildGeoapifyStaticMapUrl(style, apiKey, lat, lng, zoom);
+      return buildGeoapifyStaticMapUrl(style, apiKey, lat, lng, zoom, dimensions);
     }
 
     function showStaticPreviewUnavailable(canvas, message) {
@@ -609,6 +716,43 @@
         info.textContent = message || 'Static map preview is currently unavailable.';
         canvas.insertBefore(info, canvas.firstChild || null);
       }
+    }
+
+    function calculatePreviewDimensions(canvas) {
+      const fallback = { width: 600, height: 338 };
+      if (!canvas) {
+        return fallback;
+      }
+
+      let rect = null;
+      try {
+        rect = typeof canvas.getBoundingClientRect === 'function' ? canvas.getBoundingClientRect() : null;
+      } catch (rectError) {
+        rect = null;
+      }
+
+      const rawPixelRatio = (typeof window !== 'undefined' && window && window.devicePixelRatio) ? window.devicePixelRatio : 1;
+      const devicePixelRatio = rawPixelRatio > 0 ? rawPixelRatio : 1;
+      const width = rect && rect.width ? rect.width : (canvas.clientWidth || 0);
+      const height = rect && rect.height ? rect.height : (canvas.clientHeight || 0);
+
+      if (!(width > 0) || !(height > 0)) {
+        return fallback;
+      }
+
+      const scaledWidth = Math.max(1, Math.round(width * devicePixelRatio));
+      const scaledHeight = Math.max(1, Math.round(height * devicePixelRatio));
+      const MAX_DIMENSION = 2048;
+      const scaleFactor = Math.min(1, MAX_DIMENSION / scaledWidth, MAX_DIMENSION / scaledHeight);
+
+      if (scaleFactor < 1) {
+        return {
+          width: Math.max(1, Math.round(scaledWidth * scaleFactor)),
+          height: Math.max(1, Math.round(scaledHeight * scaleFactor))
+        };
+      }
+
+      return { width: scaledWidth, height: scaledHeight };
     }
 
     function showPreview(wrapper, lat, lng, zoom, markerText, locationLabel) {
@@ -654,7 +798,8 @@
       }
 
       function updatePreviewImage() {
-        const staticMapUrl = buildStaticMapUrl(wrapper, lat, lng, zoom);
+        const dimensions = calculatePreviewDimensions(canvas);
+        const staticMapUrl = buildStaticMapUrl(wrapper, lat, lng, zoom, dimensions);
         if (!staticMapUrl) {
           if (img.parentNode) {
             img.remove();
@@ -794,12 +939,9 @@
           return;
         }
 
-        const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(locationValue);
-        fetch(url, {
-          headers: {
-            'Accept-Language': (navigator.language || 'en')
-          }
-        })
+        const requestUrl = buildNominatimUrl(locationValue);
+        const requestOptions = buildNominatimRequestOptions();
+        queueNominatimRequest(requestUrl, requestOptions)
           .then(function(response) {
             if (!response.ok) {
               throw new Error('Network response was not ok');
